@@ -91,7 +91,7 @@
   }
   header.topbar .back-btn{
     background:rgba(0,0,0,0.28);border:none;color:var(--paper);
-    width:40px;height:40px;border-radius:50%;flex-shrink:0;
+    width:34px;height:34px;border-radius:50%;flex-shrink:0;
     display:flex;align-items:center;justify-content:center;
     cursor:pointer; padding:0;
   }
@@ -119,6 +119,11 @@
     font-size:0.7rem; font-weight:700; cursor:pointer; white-space:nowrap;
   }
   header.topbar .header-guide-pill.set{background:var(--moss-600); border-color:transparent;}
+  header.topbar .header-guide-remove{
+    flex-shrink:0; width:26px; height:26px; border-radius:50%; border:none;
+    background:rgba(0,0,0,0.3); color:#fff; font-size:0.7rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
   header.topbar .eyebrow{
     margin:0 0 1px; font-size:0.54rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
     color:rgba(255,255,255,0.7);
@@ -359,6 +364,16 @@
     margin-top:8px; font-size:0.85rem; color:var(--ink-700);
     background:var(--stone-100); border-radius:10px; padding:8px 10px;
   }
+  .note-display{
+    display:flex; align-items:flex-start; gap:8px;
+    background:var(--stone-100); border-radius:10px; padding:10px 12px; margin-top:2px;
+  }
+  .note-display p{margin:0; flex:1; font-size:0.88rem; color:var(--ink-800); white-space:pre-wrap; word-break:break-word;}
+  .icon-edit-btn{
+    flex-shrink:0; background:none; border:none; padding:2px 4px; font-size:1rem;
+    color:var(--stone-400); cursor:pointer; line-height:1;
+  }
+  .icon-edit-btn:active{color:var(--ink-700);}
   .session-notes-list{margin:2px 0; padding-left:18px;}
   .session-notes-list li{font-size:0.85rem; color:var(--ink-700); margin-bottom:2px;}
   .session-notes-line{font-size:0.85rem; color:var(--ink-700); margin-bottom:2px;}
@@ -498,6 +513,7 @@
   .sheet{
     background:var(--paper); width:100%; border-radius:20px 20px 0 0;
     padding:18px 18px calc(22px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto;
+    overscroll-behavior:contain;
   }
   .sheet h2{margin:0 0 4px; font-size:1.1rem;}
   .sheet .sheet-sub{font-size:0.8rem; color:var(--ink-700); margin-bottom:10px;}
@@ -924,7 +940,7 @@
   </div>
   <div class="topbar-bottom">
     <button class="back-btn" id="backBtn" style="display:none;" aria-label="Atrás">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <div class="topbar-title-wrap">
       <p class="eyebrow" id="topEyebrow"></p>
@@ -1679,7 +1695,7 @@ const I18N = {
     btn_guardar:"Guardar", btn_cancelar:"Cancelar", btn_eliminar:"Eliminar", btn_editar:"Editar", btn_entendido:"Entendido",
     btn_empezar:"Empezar a escalar", btn_actualizar:"Actualizar", btn_guardar_cambios:"Guardar cambios",
     btn_editar_nombre:"Editar nombre", btn_como_llegar:"Cómo llegar", btn_guardar_aqui:"Guardar aquí",
-    btn_guardar_nota:"Guardar nota", btn_conseguido:"¡Lo conseguí! 🏆", btn_guardar_hecho:"Guardar como hecho",
+    btn_guardar_nota:"Guardar nota", btn_conseguido:"¡Lo conseguí! 🏆", btn_guardar_hecho:"Guardar como hecho", editar:"Editar",
     tab_por_hacer:(n)=>`Por hacer (${n})`, tab_hechos:(n)=>`Hechos (${n})`,
     tab_calendario:"Calendario", tab_cronometro:"Cronómetro", tab_extras:"Extras",
     sec_pdfs_entreno:"PDFs de entrenamiento", pdfs_entreno_hint:"Adjunta rutinas, planes de entrenamiento u otros PDFs de referencia.",
@@ -1712,6 +1728,10 @@ const I18N = {
     toast_zona_ubic_guardada:"Ubicación de la zona guardada 📍",
     toast_no_geo:"Tu navegador no soporta ubicación", buscando_ubicacion:"Buscando ubicación...",
     toast_parking_guardado:"Ubicación del parking guardada 🅿️", toast_no_ubicacion:"No se pudo obtener la ubicación. Revisa los permisos.",
+    toast_geo_denegado:"Permiso de ubicación denegado. Actívalo en los ajustes de la app (Android: mantén pulsado el icono → Información de la app → Permisos → Ubicación).",
+    toast_geo_timeout:"Ha tardado demasiado en encontrar tu ubicación. Sal a un sitio más abierto e inténtalo de nuevo.",
+    toast_geo_no_disponible:"No se pudo determinar tu ubicación ahora mismo. Revisa que el GPS del móvil esté activado.",
+    toast_ubicacion_obtenida:"📍 Ubicación obtenida",
     loc_bar_guardado:"Parking guardado para este sector", loc_bar_guarda:"Guarda la ubicación del parking",
     btn_como_llegar_corto:"Cómo llegar", parking_corto:"Parking", zona_corto:"Zona de bloques", omitir_por_ahora:"Omitir por ahora",
     toca_como_llegar:"Toca para ver cómo llegar", toca_para_abrir:"Toca para abrir el PDF",
@@ -1743,7 +1763,7 @@ const I18N = {
     confirm_del_bloque:"¿Eliminar este bloque?",
     block_form_title:(ed)=>ed?"Editar bloque":"Nuevo bloque", block_name:"Nombre del bloque", ph_nombre_bloque:"Nombre o descripción",
     numero_bloque:"Número de bloque", ph_numero_bloque:"Ej: 24 (número del bloque o la piedra)",
-    coordenadas_bloque_label:"Coordenadas del bloque", coordenadas_bloque_hint:"Guarda la ubicación exacta de esta piedra para ir directo la próxima vez.",
+    coordenadas_bloque_label:"Ubicación del bloque", coordenadas_bloque_hint:"Guarda la ubicación exacta de esta piedra para ir directo la próxima vez.",
     grado:"Grado", estilo_elige:"Estilo (elige las que apliquen)", tipo_roca:"Tipo de roca", estado:"Estado",
     personalizado:"Personalizado", ph_personalizado:"Escribe y pulsa Intro",
     por_hacer:"Por hacer", hecho:"Hecho", puntuacion:"Puntuación", ph_notas:"Notas...",
@@ -1761,8 +1781,8 @@ const I18N = {
     sesion_completada:"Sesión completada", desc_sesion:"Descripción de la sesión",
     sensaciones_label:"Sensaciones", sensacion_excelente:"Excelente", sensacion_normal:"Normal",
     sensacion_fatigado:"Fatigado", sensacion_molestia:"Molestia dedos",
-    ph_desc_sesion:"Qué toca hacer: series, ejercicios, sensaciones...",
-    desc_sesion_bullets_hint:"Escribe cada punto en una línea empezando con \"-\" para que salga como lista (ej. \"- Calentamiento 10 min\").",
+    ph_desc_sesion:"Describe en qué va a consistir la sesión, con su duración, etc.",
+    desc_sesion_bullets_hint:"Descríbela para que te resulte fácil seguirla a la hora de entrenar.",
     repetir_rutina:"Repetir como rutina", se_repite_dias:"Se repite los días",
     color_sesion_label:"Color",
     objetivos_entreno_titulo:"Objetivos de entrenamiento", objetivos_entreno_hint:"Metas de temporada para tus entrenos: fuerza, técnica, lo que quieras marcarte.",
@@ -2029,7 +2049,7 @@ const I18N = {
     btn_guardar:"Save", btn_cancelar:"Cancel", btn_eliminar:"Delete", btn_editar:"Edit", btn_entendido:"Got it",
     btn_empezar:"Start climbing", btn_actualizar:"Update", btn_guardar_cambios:"Save changes",
     btn_editar_nombre:"Edit name", btn_como_llegar:"Directions", btn_guardar_aqui:"Save here",
-    btn_guardar_nota:"Save note", btn_conseguido:"Sent it! 🏆", btn_guardar_hecho:"Mark as sent",
+    btn_guardar_nota:"Save note", btn_conseguido:"Sent it! 🏆", btn_guardar_hecho:"Mark as sent", editar:"Edit",
     tab_por_hacer:(n)=>`Projects (${n})`, tab_hechos:(n)=>`Sent (${n})`,
     tab_calendario:"Calendar", tab_cronometro:"Timer", tab_extras:"Extras",
     sec_pdfs_entreno:"Training PDFs", pdfs_entreno_hint:"Attach routines, training plans or other reference PDFs.",
@@ -2062,6 +2082,10 @@ const I18N = {
     toast_zona_ubic_guardada:"Area location saved 📍",
     toast_no_geo:"Your browser doesn't support location", buscando_ubicacion:"Finding location...",
     toast_parking_guardado:"Parking location saved 🅿️", toast_no_ubicacion:"Couldn't get your location. Check permissions.",
+    toast_geo_denegado:"Location permission denied. Enable it in the app settings (Android: long-press the icon → App info → Permissions → Location).",
+    toast_geo_timeout:"Took too long to find your location. Try again somewhere more open.",
+    toast_geo_no_disponible:"Couldn't determine your location right now. Check that your phone's GPS is turned on.",
+    toast_ubicacion_obtenida:"📍 Location captured",
     loc_bar_guardado:"Parking saved for this sector", loc_bar_guarda:"Save the parking location",
     btn_como_llegar_corto:"Directions", parking_corto:"Parking", zona_corto:"Boulder area", omitir_por_ahora:"Skip for now",
     toca_como_llegar:"Tap to see directions", toca_para_abrir:"Tap to open the PDF",
@@ -2093,7 +2117,7 @@ const I18N = {
     confirm_del_bloque:"Delete this boulder?",
     block_form_title:(ed)=>ed?"Edit boulder":"New boulder", block_name:"Boulder name", ph_nombre_bloque:"Name or description",
     numero_bloque:"Block number", ph_numero_bloque:"E.g: 24 (the boulder's number)",
-    coordenadas_bloque_label:"Boulder coordinates", coordenadas_bloque_hint:"Save this boulder's exact location to head straight there next time.",
+    coordenadas_bloque_label:"Boulder location", coordenadas_bloque_hint:"Save this boulder's exact location to head straight there next time.",
     grado:"Grade", estilo_elige:"Style (pick what applies)", tipo_roca:"Rock type", estado:"Status",
     personalizado:"Custom", ph_personalizado:"Type and press Enter",
     por_hacer:"Project", hecho:"Sent", puntuacion:"Rating", ph_notas:"Notes...",
@@ -2111,8 +2135,8 @@ const I18N = {
     sesion_completada:"Session completed", desc_sesion:"Session description",
     sensaciones_label:"Feelings", sensacion_excelente:"Excellent", sensacion_normal:"Normal",
     sensacion_fatigado:"Fatigued", sensacion_molestia:"Finger niggle",
-    ph_desc_sesion:"What to do: sets, exercises, feelings...",
-    desc_sesion_bullets_hint:"Write each point on its own line starting with \"-\" to get a bullet list (e.g. \"- 10 min warm-up\").",
+    ph_desc_sesion:"Describe what the session will consist of, with its duration, etc.",
+    desc_sesion_bullets_hint:"Describe it so it's easy to follow when you're training.",
     repetir_rutina:"Repeat as a routine", se_repite_dias:"Repeats on",
     color_sesion_label:"Color",
     objetivos_entreno_titulo:"Training goals", objetivos_entreno_hint:"Season goals for your training: strength, technique, whatever you want to set for yourself.",
@@ -2303,6 +2327,11 @@ function setHeader(title, sub, showBack){
   if(headerAction){ headerAction.style.display = "none"; headerAction.innerHTML = ""; }
 }
 
+function geoErrorMessage(err){
+  if(err && err.code===1) return t("toast_geo_denegado");
+  if(err && err.code===3) return t("toast_geo_timeout");
+  return t("toast_geo_no_disponible");
+}
 function openInMaps(lat, lng){
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const webUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -2346,19 +2375,38 @@ function toast(msg){
 /* ---------------------------------------------------------- */
 const sheetBackdrop = document.getElementById("sheetBackdrop");
 const sheetContent = document.getElementById("sheetContent");
+let bodyScrollLockY = 0;
+let bodyIsLocked = false;
+function lockBodyScroll(){
+  if(bodyIsLocked) return;
+  bodyScrollLockY = window.scrollY || window.pageYOffset || 0;
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${bodyScrollLockY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  bodyIsLocked = true;
+}
+function unlockBodyScroll(){
+  if(!bodyIsLocked) return;
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, bodyScrollLockY);
+  bodyIsLocked = false;
+}
 function openSheet(html, onOpen){
   sheetContent.innerHTML = '<div class="sheet-handle"></div>' + html;
   sheetBackdrop.classList.add("open");
+  lockBodyScroll();
   history.pushState({sheetOpen:true}, "");
   window.addEventListener("popstate", handleSheetPopstate);
   if(onOpen) onOpen(sheetContent);
 }
 function closeSheet(){
-  if(history.state && history.state.sheetOpen){
-    history.back();
-  } else {
-    closeSheetInternal();
-  }
+  closeSheetInternal();
 }
 function handleSheetPopstate(){
   closeSheetInternal();
@@ -2367,6 +2415,7 @@ function closeSheetInternal(){
   window.removeEventListener("popstate", handleSheetPopstate);
   sheetBackdrop.classList.remove("open");
   sheetContent.innerHTML = "";
+  unlockBodyScroll();
 }
 function openItemFilterSheet(availableStyles, availableGrades, onApply){
   const sortOptions = [
@@ -2642,6 +2691,7 @@ async function renderLocationsView(){
       state.sectStack = [loc];
       state.sectorSearchOpen = false;
       state.sectorSearchTerm = "";
+      history.pushState({navDepth:1}, "");
       render();
     });
   });
@@ -2719,7 +2769,10 @@ async function renderSectorsView(loc){
   const hasZoneGuide = !!(loc.guide && loc.guide.blob);
   const headerAction = document.getElementById("topHeaderAction");
   headerAction.style.display = "";
-  headerAction.innerHTML = `<label class="header-guide-pill ${hasZoneGuide?"set":""}" id="zoneGuidePillBtn" ${hasZoneGuide?"":`for="sectorGuideInput"`}>📄 ${hasZoneGuide?t("ver_croquis"):t("anadir_guia_pdf")}</label>`;
+  headerAction.innerHTML = `<div style="display:flex;align-items:center;gap:6px;">
+    <label class="header-guide-pill ${hasZoneGuide?"set":""}" id="zoneGuidePillBtn" ${hasZoneGuide?"":`for="sectorGuideInput"`}>📄 ${hasZoneGuide?t("ver_croquis"):t("anadir_guia_pdf")}</label>
+    ${hasZoneGuide?`<button class="header-guide-remove" id="zoneGuideRemoveBtn" title="${t("quitar_guia")}">✕</button>`:""}
+  </div>`;
   headerAction.querySelector("#zoneGuidePillBtn").addEventListener("click",(e)=>{
     if(hasZoneGuide){
       e.preventDefault();
@@ -2728,6 +2781,18 @@ async function renderSectorsView(loc){
       pendingGuideTarget = {type:"location", id:loc.id};
     }
   });
+  const zoneGuideRemoveBtn = headerAction.querySelector("#zoneGuideRemoveBtn");
+  if(zoneGuideRemoveBtn){
+    zoneGuideRemoveBtn.addEventListener("click", async (e)=>{
+      e.stopPropagation();
+      openConfirmSheet(t("quitar_guia_titulo"), t("confirm_quitar_guia"), t("btn_quitar_guia"), async ()=>{
+        loc.guide = null;
+        await dbPut("locations", loc);
+        toast(t("toast_guia_eliminada"));
+        render();
+      });
+    });
+  }
 
   const itemStore = state.climbMode==="route" ? "routes" : "blocks";
   const [sectors, items] = await Promise.all([dbGetAll("sectors"), dbGetAll(itemStore)]);
@@ -2794,6 +2859,7 @@ async function renderSectorsView(loc){
         state.sectStack = [loc, sec];
         state.blockFilter = "todo";
         state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        history.pushState({navDepth:2}, "");
         render();
       });
     });
@@ -2876,8 +2942,8 @@ function openSectorMenu(sec){
         closeSheet();
         toast(t("toast_parking_guardado"));
         render();
-      }, ()=>{
-        toast(t("toast_no_ubicacion"));
+      }, (err)=>{
+        toast(geoErrorMessage(err));
         root.querySelector("#mLoc").textContent = "🅿️ " + t("parking_guardar");
       }, {enableHighAccuracy:true, timeout:12000});
     };
@@ -2896,8 +2962,8 @@ function openSectorMenu(sec){
         closeSheet();
         toast(t("toast_zona_ubic_guardada"));
         render();
-      }, ()=>{
-        toast(t("toast_no_ubicacion"));
+      }, (err)=>{
+        toast(geoErrorMessage(err));
         root.querySelector("#mZoneLoc").textContent = "📍 " + t("zona_guardar");
       }, {enableHighAccuracy:true, timeout:12000});
     };
@@ -2964,8 +3030,8 @@ function wireLocationGuideSection(sec){
       await dbPut("sectors", sec);
       toast(t("parking_guardado"));
       render();
-    }, ()=>{
-      toast(t("toast_no_ubicacion"));
+    }, (err)=>{
+      toast(geoErrorMessage(err));
     }, {enableHighAccuracy:true, timeout:12000});
   }
   async function captureZoneLocationDirect(){
@@ -2977,8 +3043,8 @@ function wireLocationGuideSection(sec){
       await dbPut("sectors", sec);
       toast(t("toast_zona_ubic_guardada"));
       render();
-    }, ()=>{
-      toast(t("toast_no_ubicacion"));
+    }, (err)=>{
+      toast(geoErrorMessage(err));
     }, {enableHighAccuracy:true, timeout:12000});
   }
   function openManualCoordsSheet(kind){
@@ -3276,7 +3342,15 @@ async function renderBlocksView(loc, sec){
         const ta = listArea.querySelector(`textarea[data-comment-for="${block.id}"]`);
         block.comment = ta.value.trim();
         await dbPut("blocks", block);
+        editingCommentIds.delete(block.id);
         toast(t("toast_nota_guardada"));
+        render();
+      });
+    });
+    listArea.querySelectorAll("[data-action=edit-comment]").forEach(el=>{
+      el.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        editingCommentIds.add(el.dataset.block);
         render();
       });
     });
@@ -3397,10 +3471,17 @@ function renderBlockRow(b){
           <button class="btn btn-xs btn-ghost ${priority==='discarded'?'btn-priority-active-discarded':''}" data-action="abandon" data-block="${b.id}">🗑️ ${t("btn_abandono")}</button>
         </div>
         <label class="field-label">${t("que_falto_opcional")}</label>
+        ${(b.comment && !editingCommentIds.has(b.id)) ? `
+        <div class="note-display">
+          <p>${escapeHtml(b.comment)}</p>
+          <button class="icon-edit-btn" data-action="edit-comment" data-block="${b.id}" aria-label="${t("editar")}">✎</button>
+        </div>
+        ` : `
         <textarea data-comment-for="${b.id}" placeholder="${t("ph_notas")}">${escapeHtml(b.comment||"")}</textarea>
         <div class="btn-row">
           <button class="btn btn-ghost" data-action="save-comment" data-block="${b.id}">${t("btn_guardar_nota")}</button>
         </div>
+        `}
         <label class="field-label">${t("fotos")}</label>
         <div class="photos-hint">${t("fotos_hint")}</div>
         <div class="block-photos">
@@ -3489,7 +3570,6 @@ function openBlockForm(sec, existing){
     <input type="file" id="fBPhotoInput" accept="image/*" multiple style="display:none;">
     <details class="block-coords-details">
       <summary><span class="guide-plus">+</span> ${t("coordenadas_bloque_label")}</summary>
-      <div class="sheet-sub" style="margin:6px 0 6px;">${t("coordenadas_bloque_hint")}</div>
       <div class="coord-input-row">
         <input type="text" inputmode="decimal" id="fBLat" placeholder="${t("latitud")}" value="${existing&&existing.lat!=null?existing.lat:""}">
         <button type="button" class="coord-sign-btn" id="fBLatSign" title="${t("invertir_signo")}">±</button>
@@ -3981,7 +4061,15 @@ async function renderRoutesView(loc, sec){
         const ta = listArea.querySelector(`textarea[data-comment-for="${route.id}"]`);
         route.comment = ta.value.trim();
         await dbPut("routes", route);
+        editingCommentIds.delete(route.id);
         toast(t("toast_nota_guardada"));
+        render();
+      });
+    });
+    listArea.querySelectorAll("[data-action=edit-comment-route]").forEach(el=>{
+      el.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        editingCommentIds.add(el.dataset.route);
         render();
       });
     });
@@ -4104,10 +4192,17 @@ function renderRouteRow(r){
           <button class="btn btn-xs btn-ghost ${priority==='discarded'?'btn-priority-active-discarded':''}" data-action="abandon-route" data-route="${r.id}">🗑️ ${t("btn_abandono")}</button>
         </div>
         <label class="field-label">${t("que_falto_opcional")}</label>
+        ${(r.comment && !editingCommentIds.has(r.id)) ? `
+        <div class="note-display">
+          <p>${escapeHtml(r.comment)}</p>
+          <button class="icon-edit-btn" data-action="edit-comment-route" data-route="${r.id}" aria-label="${t("editar")}">✎</button>
+        </div>
+        ` : `
         <textarea data-comment-for="${r.id}" placeholder="${t("ph_notas")}">${escapeHtml(r.comment||"")}</textarea>
         <div class="btn-row">
           <button class="btn btn-ghost" data-action="save-comment-route" data-route="${r.id}">${t("btn_guardar_nota")}</button>
         </div>
+        `}
         <label class="field-label">${t("fotos")}</label>
         <div class="photos-hint">${t("fotos_hint")}</div>
         <div class="block-photos">
@@ -4200,7 +4295,6 @@ function openRouteForm(sec, existing){
     <input type="file" id="rPhotoInput" accept="image/*" multiple style="display:none;">
     <details class="block-coords-details">
       <summary><span class="guide-plus">+</span> ${t("coordenadas_bloque_label")}</summary>
-      <div class="sheet-sub" style="margin:6px 0 6px;">${t("coordenadas_bloque_hint")}</div>
       <div class="coord-input-row">
         <input type="text" inputmode="decimal" id="rLat" placeholder="${t("latitud")}" value="${existing&&existing.lat!=null?existing.lat:""}">
         <button type="button" class="coord-sign-btn" id="rLatSign" title="${t("invertir_signo")}">±</button>
@@ -4736,11 +4830,7 @@ async function openPdfOverlay(url, filename){
   }
 }
 function closePdfOverlay(){
-  if(history.state && history.state.pdfOverlay){
-    history.back();
-  } else {
-    closePdfOverlayInternal();
-  }
+  closePdfOverlayInternal();
 }
 function handlePdfOverlayPopstate(){
   closePdfOverlayInternal();
@@ -5903,6 +5993,8 @@ function openLogForm(dateStr, existing){
       const completedElSave = root.querySelector("#lCompleted");
       const completed = completedElSave ? completedElSave.checked : false;
       const baseDate = root.querySelector("#lDate").value || dateStr;
+      const wasCompletedBefore = existing ? !!existing.completed : false;
+      const justCompleted = completed && !wasCompletedBefore;
 
       const repeatOn = root.querySelector("#lRepeat") && root.querySelector("#lRepeat").checked;
 
@@ -5938,11 +6030,13 @@ function openLogForm(dateStr, existing){
             });
           }
           closeSheet();
+          if(justCompleted) playSuccessChime();
           toast(datesE.length>0 ? t("toast_rutina_creada",datesE.length+1) : t("toast_guardado"));
           render();
           return;
         }
         closeSheet();
+        if(justCompleted) playSuccessChime();
         toast(t("toast_guardado"));
         render();
         return;
@@ -5954,6 +6048,7 @@ function openLogForm(dateStr, existing){
           completed, notes, category:selectedCategory, color:selectedColor, feeling:selectedFeeling, createdAt:Date.now()
         });
         closeSheet();
+        if(justCompleted) playSuccessChime();
         toast(t("toast_guardado"));
         render();
         return;
@@ -5992,6 +6087,7 @@ function openLogForm(dateStr, existing){
         });
       }
       closeSheet();
+      if(justCompleted) playSuccessChime();
       toast(dates.length>1 ? t("toast_rutina_creada",dates.length) : t("toast_guardado"));
       render();
     };
@@ -6146,6 +6242,7 @@ async function computeCurrentLevel(){
   return computeLevel(totalPoints);
 }
 let cachedLevelIndex = 1;
+let editingCommentIds = new Set();
 function paintLevelBadge(){
   const badge = document.getElementById("heroLevelBadge");
   if(!badge) return;
@@ -6176,6 +6273,10 @@ async function notifyLevelUpIfNeeded(index, levelName){
     await dbPut("meta", rec);
   }
 }
+function playLevelUpFanfare(){
+  const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98, 2093.0];
+  notes.forEach((freq,i)=>{ playTone(freq, 0.13, i*0.075, 0.2); });
+}
 function showLevelUpBanner(index, levelName){
   const el = document.createElement("div");
   el.className = "level-up-banner";
@@ -6188,6 +6289,7 @@ function showLevelUpBanner(index, levelName){
   `;
   document.body.appendChild(el);
   requestAnimationFrame(()=>el.classList.add("show"));
+  playLevelUpFanfare();
   const remove = ()=>{ el.classList.remove("show"); setTimeout(()=>el.remove(), 420); };
   el.addEventListener("click", remove);
   setTimeout(remove, 3800);
@@ -7295,11 +7397,20 @@ document.querySelectorAll(".bottom-nav button").forEach(btn=>{
 
 backBtn.addEventListener("click",()=>{
   if(state.tab==="sectores" && state.sectStack.length>0){
-    state.sectStack.pop();
-    state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
-    state.sectorSearchOpen = false;
-    state.sectorSearchTerm = "";
-    render();
+    history.back();
+  }
+});
+window.addEventListener("popstate",(e)=>{
+  if(e.state && (e.state.sheetOpen || e.state.pdfOverlay)) return;
+  if(state.tab==="sectores" && state.sectStack.length>0){
+    const targetDepth = (e.state && typeof e.state.navDepth==="number") ? e.state.navDepth : 0;
+    if(targetDepth < state.sectStack.length){
+      state.sectStack.length = targetDepth;
+      state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+      state.sectorSearchOpen = false;
+      state.sectorSearchTerm = "";
+      render();
+    }
   }
 });
 
