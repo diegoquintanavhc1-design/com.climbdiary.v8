@@ -3,10 +3,9 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.climbdiary.v8",
-      "sha256_cert_fingerprints": [
-        "02:1E:11:F7:EB:CA:4B:03:CF:F6:06:4D:AF:CD:93:75:7E:48:45:C6:A3:F8:A1:65:E9:EF:5E:FF:13:0E:A6:71"
-      ]
+      "package_name": "com.climbdiary.v10",
+      "sha256_cert_fingerprints":
+        ["15:EC:7D:17:FA:AC:C5:6B:11:5B:89:EB:4E:DD:77:F7:89:5B:2C:50:96:11:D0:F2:55:8B:2B:BA:E4:3B:6C:D2"]
     }
   }
 ]
