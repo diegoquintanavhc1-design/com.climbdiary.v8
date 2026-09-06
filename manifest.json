@@ -1,0 +1,17 @@
+{
+  "name": "Climb Diary",
+  "short_name": "Climb Diary",
+  "description": "Diario de escalada: sectores, bloques, guías PDF y entrenamiento, todo offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1B241D",
+  "theme_color": "#211F1C",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
