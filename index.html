@@ -375,8 +375,8 @@
   }
   .icon-edit-btn:active{color:var(--ink-700);}
   .session-notes-list{margin:2px 0; padding-left:18px;}
-  .session-notes-list li{font-size:0.85rem; color:var(--ink-700); margin-bottom:2px;}
-  .session-notes-line{font-size:0.85rem; color:var(--ink-700); margin-bottom:2px;}
+  .session-notes-list li{font-size:0.85rem; color:var(--ink-700); margin-bottom:2px; overflow-wrap:break-word; word-break:break-word;}
+  .session-notes-line{font-size:0.85rem; color:var(--ink-700); margin-bottom:2px; overflow-wrap:break-word; word-break:break-word;}
   .finger-grade-eq{font-size:0.76rem; color:var(--moss-600); font-weight:700; margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .finger-level-tag{
     font-size:0.62rem; font-weight:800; background:var(--moss-100); color:var(--moss-600);
@@ -506,13 +506,13 @@
 
   /* modal */
   .sheet-backdrop{
-    position:fixed; inset:0; background:rgba(33,31,28,0.5); z-index:30;
+    position:fixed; inset:0; background:rgba(33,31,28,0.5); z-index:65;
     display:none; align-items:flex-end;
   }
   .sheet-backdrop.open{display:flex;}
   .sheet{
     background:var(--paper); width:100%; border-radius:20px 20px 0 0;
-    padding:18px 18px calc(22px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto;
+    padding:18px 18px calc(22px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto; overflow-x:hidden;
     overscroll-behavior:contain;
   }
   .sheet h2{margin:0 0 4px; font-size:1.1rem;}
@@ -823,6 +823,7 @@
   }
   .session-viewer .sv-desc{
     font-size:1rem; line-height:1.6; color:var(--ink-900); white-space:pre-wrap;
+    overflow-wrap:break-word; word-break:break-word;
     margin-top:6px; padding-top:12px; border-top:1px solid var(--stone-300);
   }
   .session-viewer .sv-desc.muted{color:var(--stone-500); font-style:italic; font-size:0.9rem;}
@@ -1087,7 +1088,7 @@ const state = {
 };
 
 const ACCENT_PALETTE = ["#55684A","#A8461F","#3E5B68","#B8801F","#6B4A73","#2F7A6B"];
-const STYLE_TAGS = ["Placa","Desplome","Techo","Fisuras","Regletas","Bidedos","Dinámico","Romos","Arista","Cazos"];
+const STYLE_TAGS = ["Placa","Desplome","Techo","Fisuras","Regletas","Bidedos","Dinámico","Romos","Arista","Cazos","Talones","Travesía"];
 const SENSACIONES_OPTIONS = [
   {key:"excelente", icon:"🔥", labelKey:"sensacion_excelente"},
   {key:"normal", icon:"⚡", labelKey:"sensacion_normal"},
@@ -1695,7 +1696,7 @@ const I18N = {
     btn_guardar:"Guardar", btn_cancelar:"Cancelar", btn_eliminar:"Eliminar", btn_editar:"Editar", btn_entendido:"Entendido",
     btn_empezar:"Empezar a escalar", btn_actualizar:"Actualizar", btn_guardar_cambios:"Guardar cambios",
     btn_editar_nombre:"Editar nombre", btn_como_llegar:"Cómo llegar", btn_guardar_aqui:"Guardar aquí",
-    btn_guardar_nota:"Guardar nota", btn_conseguido:"¡Lo conseguí! 🏆", btn_guardar_hecho:"Guardar como hecho", editar:"Editar",
+    btn_guardar_nota:"Guardar nota", btn_conseguido:"¡Lo conseguí! 🏆", btn_guardar_hecho:"Guardar como hecho", editar:"Editar", eliminar:"Eliminar", entendido:"Entendido",
     tab_por_hacer:(n)=>`Por hacer (${n})`, tab_hechos:(n)=>`Hechos (${n})`,
     tab_calendario:"Calendario", tab_cronometro:"Cronómetro", tab_extras:"Extras",
     sec_pdfs_entreno:"PDFs de entrenamiento", pdfs_entreno_hint:"Adjunta rutinas, planes de entrenamiento u otros PDFs de referencia.",
@@ -1798,7 +1799,7 @@ const I18N = {
     sesion_generica:"Sesión", hoy_tag:"HOY", sin_desc_toca:"Sin descripción — toca para añadirla", sin_desc:"Sin descripción todavía.",
     fecha_hoy:"Hoy", fecha_hace_dias:(n)=>`${n} d.`, fecha_hace_semanas:(n)=>`${n} sem.`, fecha_hace_meses:(n)=>`${n} m.`,
     attempt_flash_pill:"⚡ Flash", pegues_pill:(n)=>`${n} pegues`,
-    trabajo_seg:"Trabajo (segundos)", descanso_seg:"Descanso (segundos)", rondas:"Rondas",
+    trabajo_seg:"Trabajo (segundos)", descanso_seg:"Descanso (segundos)", rondas:"Rondas", grosor_regleta:"Grosor de regleta (mm)", ver_descripcion:"Ver descripción",
     pausa:"⏸ Pausa", empezar_timer:"▶ Empezar", reanudar:"▶ Reanudar", reiniciar:"↺ Reiniciar",
     ronda:(r,tot)=>`Ronda ${r}/${tot}`, serie_completa:"¡Serie completa! 💪",
     phase_work:"TRABAJO", phase_rest:"DESCANSO", phase_done:"COMPLETADO", phase_idle:"LISTO", phase_ready:"¡PREPÁRATE!",
@@ -1837,6 +1838,7 @@ const I18N = {
     confirm_borrar_fotos_msg:"Se eliminarán las fotos de todos tus bloques y vías. Esta acción no se puede deshacer.",
     toast_preparando_copia:"Preparando copia...", toast_copia_exportada:"Copia exportada", toast_csv_exportado:"CSV exportado",
     confirm_importar:"Importar sustituirá todos los datos actuales por los de esta copia. ¿Continuar?",
+    importar_copia_titulo:"Importar copia de seguridad", copia_no_valida_titulo:"Copia no válida",
     toast_copia_importada:"Copia importada", alert_copia_invalida:"El archivo no es una copia válida de Climb Diary.",
     guias_pdf_guardadas:"Guías PDF guardadas", toca_liberar:"toca 🗑 para borrar una guía y liberar espacio",
     confirm_del_liberar:(n,size)=>`¿Eliminar "${n}" y liberar ${size}?`, toast_espacio_liberado:"Espacio liberado",
@@ -2049,7 +2051,7 @@ const I18N = {
     btn_guardar:"Save", btn_cancelar:"Cancel", btn_eliminar:"Delete", btn_editar:"Edit", btn_entendido:"Got it",
     btn_empezar:"Start climbing", btn_actualizar:"Update", btn_guardar_cambios:"Save changes",
     btn_editar_nombre:"Edit name", btn_como_llegar:"Directions", btn_guardar_aqui:"Save here",
-    btn_guardar_nota:"Save note", btn_conseguido:"Sent it! 🏆", btn_guardar_hecho:"Mark as sent", editar:"Edit",
+    btn_guardar_nota:"Save note", btn_conseguido:"Sent it! 🏆", btn_guardar_hecho:"Mark as sent", editar:"Edit", eliminar:"Delete", entendido:"Got it",
     tab_por_hacer:(n)=>`Projects (${n})`, tab_hechos:(n)=>`Sent (${n})`,
     tab_calendario:"Calendar", tab_cronometro:"Timer", tab_extras:"Extras",
     sec_pdfs_entreno:"Training PDFs", pdfs_entreno_hint:"Attach routines, training plans or other reference PDFs.",
@@ -2152,7 +2154,7 @@ const I18N = {
     sesion_generica:"Session", hoy_tag:"TODAY", sin_desc_toca:"No description — tap to add one", sin_desc:"No description yet.",
     fecha_hoy:"Today", fecha_hace_dias:(n)=>`${n}d`, fecha_hace_semanas:(n)=>`${n}w`, fecha_hace_meses:(n)=>`${n}mo`,
     attempt_flash_pill:"⚡ Flash", pegues_pill:(n)=>`${n} tries`,
-    trabajo_seg:"Work (seconds)", descanso_seg:"Rest (seconds)", rondas:"Rounds",
+    trabajo_seg:"Work (seconds)", descanso_seg:"Rest (seconds)", rondas:"Rounds", grosor_regleta:"Edge thickness (mm)", ver_descripcion:"View description",
     pausa:"⏸ Pause", empezar_timer:"▶ Start", reanudar:"▶ Resume", reiniciar:"↺ Reset",
     ronda:(r,tot)=>`Round ${r}/${tot}`, serie_completa:"Set complete! 💪",
     phase_work:"WORK", phase_rest:"REST", phase_done:"DONE", phase_idle:"READY", phase_ready:"GET READY!",
@@ -2192,6 +2194,7 @@ const I18N = {
     confirm_borrar_fotos_msg:"This will remove the photos from all your boulders and routes. This can't be undone.",
     toast_preparando_copia:"Preparing backup...", toast_copia_exportada:"Backup exported", toast_csv_exportado:"CSV exported",
     confirm_importar:"Importing will replace all current data with this backup. Continue?",
+    importar_copia_titulo:"Import backup", copia_no_valida_titulo:"Invalid backup",
     toast_copia_importada:"Backup imported", alert_copia_invalida:"This file isn't a valid Climb Diary backup.",
     guias_pdf_guardadas:"Saved guidebooks", toca_liberar:"tap 🗑 to delete a guidebook and free up space",
     confirm_del_liberar:(n,size)=>`Delete "${n}" and free up ${size}?`, toast_espacio_liberado:"Space freed up",
@@ -2264,7 +2267,7 @@ function monthNames(){
 }
 function tStyleTag(v){
   if(cachedSettings.language!=="en") return v;
-  const map = {"Placa":"Slab","Desplome":"Overhang","Techo":"Roof","Fisuras":"Cracks","Regletas":"Crimps","Bidedos":"Two-finger pockets","Dinámico":"Dynamic","Romos":"Slopers","Arista":"Arete","Cazos":"Jugs"};
+  const map = {"Placa":"Slab","Desplome":"Overhang","Techo":"Roof","Fisuras":"Cracks","Regletas":"Crimps","Bidedos":"Two-finger pockets","Dinámico":"Dynamic","Romos":"Slopers","Arista":"Arete","Cazos":"Jugs","Talones":"Heel hooks","Travesía":"Traverse"};
   return map[v] || v;
 }
 function tRockType(v){
@@ -2377,6 +2380,8 @@ const sheetBackdrop = document.getElementById("sheetBackdrop");
 const sheetContent = document.getElementById("sheetContent");
 let bodyScrollLockY = 0;
 let bodyIsLocked = false;
+let sheetSeq = 0;
+let pdfOverlaySeq = 0;
 function lockBodyScroll(){
   if(bodyIsLocked) return;
   bodyScrollLockY = window.scrollY || window.pageYOffset || 0;
@@ -2398,15 +2403,29 @@ function unlockBodyScroll(){
   bodyIsLocked = false;
 }
 function openSheet(html, onOpen){
+  sheetSeq++;
+  const mySeq = sheetSeq;
   sheetContent.innerHTML = '<div class="sheet-handle"></div>' + html;
   sheetBackdrop.classList.add("open");
   lockBodyScroll();
-  history.pushState({sheetOpen:true}, "");
+  if(history.state && history.state.sheetOpen){
+    history.replaceState({sheetOpen:true, seq:mySeq}, "");
+  } else {
+    history.pushState({sheetOpen:true, seq:mySeq}, "");
+  }
   window.addEventListener("popstate", handleSheetPopstate);
   if(onOpen) onOpen(sheetContent);
 }
 function closeSheet(){
   closeSheetInternal();
+  const closingSeq = (history.state && history.state.sheetOpen) ? history.state.seq : null;
+  if(closingSeq!==null){
+    Promise.resolve().then(()=>{
+      if(history.state && history.state.sheetOpen && history.state.seq===closingSeq){
+        history.back();
+      }
+    });
+  }
 }
 function handleSheetPopstate(){
   closeSheetInternal();
@@ -2532,7 +2551,42 @@ function openConfirmSheet(title, msg, confirmLabel, onConfirm){
     };
   });
 }
+function openAlertSheet(title, msg){
+  openSheet(`
+    <h2>${title}</h2>
+    <div class="sheet-sub">${msg}</div>
+    <div class="btn-row" style="flex-direction:column;">
+      <button class="btn btn-primary" id="alertOk" style="width:100%;">${t("entendido")}</button>
+    </div>
+  `,(root)=>{
+    root.querySelector("#alertOk").onclick = closeSheet;
+  });
+}
 sheetBackdrop.addEventListener("click",(e)=>{ if(e.target===sheetBackdrop) closeSheet(); });
+document.addEventListener("input",(e)=>{
+  const el = e.target;
+  if(el.tagName!=="INPUT" || el.type!=="number") return;
+  if(el.value==="" || el.value==="-") return;
+  if(el.value.length>10){
+    el.value = el.value.slice(0,10);
+  }
+  const num = parseFloat(el.value);
+  if(isNaN(num)) return;
+  const max = el.max!=="" ? parseFloat(el.max) : null;
+  if(max!=null && num>max) el.value = String(max);
+});
+document.addEventListener("focusout",(e)=>{
+  const el = e.target;
+  if(el.tagName!=="INPUT" || el.type!=="number" || el.value==="") return;
+  const num = parseFloat(el.value);
+  if(isNaN(num)) return;
+  const min = el.min!=="" ? parseFloat(el.min) : null;
+  const max = el.max!=="" ? parseFloat(el.max) : null;
+  let clamped = num;
+  if(max!=null && clamped>max) clamped = max;
+  if(min!=null && clamped<min) clamped = min;
+  if(clamped!==num) el.value = String(clamped);
+});
 
 (function(){
   let startY = null, currentY = null, dragging = false;
@@ -2630,7 +2684,22 @@ async function renderLocationsView(){
   const itemStore = state.climbMode==="route" ? "routes" : "blocks";
   const [allLocations, sectors, items] = await Promise.all([dbGetAll("locations"), dbGetAll("sectors"), dbGetAll(itemStore)]);
   const locations = allLocations.filter(l=>(l.climbType||"boulder")===state.climbMode);
-  locations.sort((a,b)=>(a.order||0)-(b.order||0));
+  const locActivity = {};
+  for(const loc of locations) locActivity[loc.id] = loc.createdAt||0;
+  for(const sec of sectors){
+    if(locActivity[sec.locationId]!==undefined){
+      locActivity[sec.locationId] = Math.max(locActivity[sec.locationId], sec.createdAt||0);
+    }
+  }
+  const secLocMap = {};
+  for(const sec of sectors) secLocMap[sec.id] = sec.locationId;
+  for(const it of items){
+    const locId = secLocMap[it.sectorId];
+    if(locId!==undefined && locActivity[locId]!==undefined){
+      locActivity[locId] = Math.max(locActivity[locId], it.createdAt||0);
+    }
+  }
+  locations.sort((a,b)=>(locActivity[b.id]||0)-(locActivity[a.id]||0));
 
   let html = "";
 
@@ -2742,20 +2811,20 @@ function openLocationMenu(loc){
     </div>
   `,(root)=>{
     root.querySelector("#mEdit").onclick = ()=>{ closeSheet(); openLocationForm(loc); };
-    root.querySelector("#mDelete").onclick = async ()=>{
-      if(!confirm(t("loc_delete_confirm",loc.name))) return;
-      const sectors = (await dbGetAll("sectors")).filter(s=>s.locationId===loc.id);
-      const blocks = await dbGetAll("blocks");
-      const routes = await dbGetAll("routes");
-      for(const s of sectors){
-        for(const b of blocks.filter(b=>b.sectorId===s.id)) await dbDelete("blocks", b.id);
-        for(const r of routes.filter(r=>r.sectorId===s.id)) await dbDelete("routes", r.id);
-        await dbDelete("sectors", s.id);
-      }
-      await dbDelete("locations", loc.id);
-      closeSheet();
-      toast(t("toast_zona_eliminada"));
-      render();
+    root.querySelector("#mDelete").onclick = ()=>{
+      openConfirmSheet(t("loc_menu_delete"), t("loc_delete_confirm",loc.name), t("loc_menu_delete"), async ()=>{
+        const sectors = (await dbGetAll("sectors")).filter(s=>s.locationId===loc.id);
+        const blocks = await dbGetAll("blocks");
+        const routes = await dbGetAll("routes");
+        for(const s of sectors){
+          for(const b of blocks.filter(b=>b.sectorId===s.id)) await dbDelete("blocks", b.id);
+          for(const r of routes.filter(r=>r.sectorId===s.id)) await dbDelete("routes", r.id);
+          await dbDelete("sectors", s.id);
+        }
+        await dbDelete("locations", loc.id);
+        toast(t("toast_zona_eliminada"));
+        render();
+      });
     };
   });
 }
@@ -2796,7 +2865,15 @@ async function renderSectorsView(loc){
 
   const itemStore = state.climbMode==="route" ? "routes" : "blocks";
   const [sectors, items] = await Promise.all([dbGetAll("sectors"), dbGetAll(itemStore)]);
-  const secOfLoc = sectors.filter(s=>s.locationId===loc.id && (s.climbType||"boulder")===state.climbMode).sort((a,b)=>(a.order||0)-(b.order||0));
+  const secOfLoc = sectors.filter(s=>s.locationId===loc.id && (s.climbType||"boulder")===state.climbMode);
+  const secActivity = {};
+  for(const sec of secOfLoc) secActivity[sec.id] = sec.createdAt||0;
+  for(const it of items){
+    if(secActivity[it.sectorId]!==undefined){
+      secActivity[it.sectorId] = Math.max(secActivity[it.sectorId], it.createdAt||0);
+    }
+  }
+  secOfLoc.sort((a,b)=>(secActivity[b.id]||0)-(secActivity[a.id]||0));
 
   let html = `<div class="section-title">${t("sectores_en",escapeHtml(loc.name))}</div>`;
   html += `<div class="search-bar" style="margin:8px 4px 14px;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="secSearchInput" placeholder="${t("buscar_sector_placeholder")}" value="${escapeAttr(state.sectorSearchTerm)}"></div>`;
@@ -2972,16 +3049,16 @@ function openSectorMenu(sec){
         openInMaps(sec.zoneLat, sec.zoneLng);
       };
     }
-    root.querySelector("#mDelete").onclick = async ()=>{
-      if(!confirm(t("sec_delete_confirm",sec.name))) return;
-      const blocks = (await dbGetAll("blocks")).filter(b=>b.sectorId===sec.id);
-      for(const b of blocks) await dbDelete("blocks", b.id);
-      const routes = (await dbGetAll("routes")).filter(r=>r.sectorId===sec.id);
-      for(const r of routes) await dbDelete("routes", r.id);
-      await dbDelete("sectors", sec.id);
-      closeSheet();
-      toast(t("toast_sector_eliminado"));
-      render();
+    root.querySelector("#mDelete").onclick = ()=>{
+      openConfirmSheet(t("sec_menu_delete"), t("sec_delete_confirm",sec.name), t("sec_menu_delete"), async ()=>{
+        const blocks = (await dbGetAll("blocks")).filter(b=>b.sectorId===sec.id);
+        for(const b of blocks) await dbDelete("blocks", b.id);
+        const routes = (await dbGetAll("routes")).filter(r=>r.sectorId===sec.id);
+        for(const r of routes) await dbDelete("routes", r.id);
+        await dbDelete("sectors", sec.id);
+        toast(t("toast_sector_eliminado"));
+        render();
+      });
     };
   });
 }
@@ -3371,12 +3448,13 @@ async function renderBlocksView(loc, sec){
       });
     });
     listArea.querySelectorAll("[data-action=delete]").forEach(el=>{
-      el.addEventListener("click",async (e)=>{
+      el.addEventListener("click",(e)=>{
         e.stopPropagation();
-        if(!confirm(t("confirm_del_bloque"))) return;
-        await dbDelete("blocks", el.dataset.block);
-        toast(t("toast_bloque_eliminado"));
-        render();
+        openConfirmSheet(t("eliminar"), t("confirm_del_bloque"), t("eliminar"), async ()=>{
+          await dbDelete("blocks", el.dataset.block);
+          toast(t("toast_bloque_eliminado"));
+          render();
+        });
       });
     });
     listArea.querySelectorAll("[data-action=add-photo]").forEach(el=>{
@@ -3511,7 +3589,7 @@ function openBlockForm(sec, existing){
     <label class="field-label">${t("grado")}</label>
     <div id="fBGradeWheelWrap">${buildGradeWheelHTML("fBGradeWheel", grades, initialGrade)}</div>
     <label class="field-label">${t("numero_bloque")}</label>
-    <input type="number" id="fBNumber" min="0" step="1" value="${existing&&existing.blockNumber?existing.blockNumber:""}" placeholder="${t("ph_numero_bloque")}">
+    <input type="number" id="fBNumber" min="0" max="9999" step="1" value="${existing&&existing.blockNumber?existing.blockNumber:""}" placeholder="${t("ph_numero_bloque")}">
     <label class="field-label">${t("estilo_elige")}</label>
     <div class="chip-grid" id="fBStyleTags">
       ${STYLE_TAGS.map(tag=>`<div class="chip-choice ${existing&&(existing.styleTags||[]).includes(tag)?"selected":""}" data-tag="${escapeAttr(tag)}">${escapeHtml(tStyleTag(tag))}</div>`).join("")}
@@ -4090,12 +4168,13 @@ async function renderRoutesView(loc, sec){
       });
     });
     listArea.querySelectorAll("[data-action=delete-route]").forEach(el=>{
-      el.addEventListener("click", async (e)=>{
+      el.addEventListener("click", (e)=>{
         e.stopPropagation();
-        if(!confirm(t("confirm_del_bloque"))) return;
-        await dbDelete("routes", el.dataset.route);
-        toast(t("toast_bloque_eliminado"));
-        render();
+        openConfirmSheet(t("eliminar"), t("confirm_del_bloque"), t("eliminar"), async ()=>{
+          await dbDelete("routes", el.dataset.route);
+          toast(t("toast_bloque_eliminado"));
+          render();
+        });
       });
     });
     listArea.querySelectorAll("[data-action=add-photo-route]").forEach(el=>{
@@ -4252,11 +4331,11 @@ function openRouteForm(sec, existing){
       <button type="button" class="chip-confirm-btn" id="rStyleCustomConfirm">✓</button>
     </div>
     <label class="field-label">${t("altura_via")}</label>
-    <input type="number" id="rLength" value="${existing&&existing.length?existing.length:""}" min="0" step="1" placeholder="20">
+    <input type="number" id="rLength" value="${existing&&existing.length?existing.length:""}" min="0" max="1500" step="1" placeholder="20">
     <label class="field-label">${t("num_seguros")}</label>
-    <input type="number" id="rBolts" value="${existing&&existing.bolts?existing.bolts:""}" min="0" step="1" placeholder="8">
+    <input type="number" id="rBolts" value="${existing&&existing.bolts?existing.bolts:""}" min="0" max="99" step="1" placeholder="8">
     <label class="field-label">${t("num_pegues")}</label>
-    <input type="number" id="rAttempts" value="${existing&&existing.numAttempts?existing.numAttempts:""}" min="0" step="1" placeholder="1">
+    <input type="number" id="rAttempts" value="${existing&&existing.numAttempts?existing.numAttempts:""}" min="0" max="9999" step="1" placeholder="1">
     <label class="field-label">${t("estado")}</label>
     <div class="tabs-row">
       <button type="button" id="rTodo" class="${(!existing||existing.status==='todo')?'active':''}">${t("por_hacer")}</button>
@@ -4699,23 +4778,24 @@ document.getElementById("photoLightboxNext").addEventListener("click", ()=>{
   lightboxContext.index = (lightboxContext.index + 1) % photos.length;
   paintLightbox();
 });
-document.getElementById("photoLightboxDelete").addEventListener("click", async ()=>{
+document.getElementById("photoLightboxDelete").addEventListener("click", ()=>{
   if(!lightboxContext) return;
-  if(!confirm(t("confirm_del_foto"))) return;
-  const {block, photos, index, storeName} = lightboxContext;
-  const photoId = photos[index].id;
-  block.photos = (block.photos||[]).filter(p=>p.id!==photoId);
-  await dbPut(storeName||"blocks", block);
-  toast(t("toast_foto_eliminada"));
-  const remaining = block.photos.filter(p=>p&&(p.blob||p.dataUrl));
-  if(remaining.length===0){
-    closePhotoLightbox();
-  } else {
-    lightboxContext.photos = remaining;
-    lightboxContext.index = Math.min(index, remaining.length-1);
-    paintLightbox();
-  }
-  render();
+  openConfirmSheet(t("eliminar"), t("confirm_del_foto"), t("eliminar"), async ()=>{
+    const {block, photos, index, storeName} = lightboxContext;
+    const photoId = photos[index].id;
+    block.photos = (block.photos||[]).filter(p=>p.id!==photoId);
+    await dbPut(storeName||"blocks", block);
+    toast(t("toast_foto_eliminada"));
+    const remaining = block.photos.filter(p=>p&&(p.blob||p.dataUrl));
+    if(remaining.length===0){
+      closePhotoLightbox();
+    } else {
+      lightboxContext.photos = remaining;
+      lightboxContext.index = Math.min(index, remaining.length-1);
+      paintLightbox();
+    }
+    render();
+  });
 });
 
 let pendingPhotoBlockId = null;
@@ -4782,7 +4862,13 @@ async function openPdfOverlay(url, filename){
   document.body.appendChild(overlay);
   overlay.querySelector("#pdfOverlayClose").addEventListener("click", closePdfOverlay);
   document.body.style.overflow = "hidden";
-  history.pushState({pdfOverlay:true}, "");
+  pdfOverlaySeq++;
+  const myPdfSeq = pdfOverlaySeq;
+  if(history.state && history.state.pdfOverlay){
+    history.replaceState({pdfOverlay:true, seq:myPdfSeq}, "");
+  } else {
+    history.pushState({pdfOverlay:true, seq:myPdfSeq}, "");
+  }
   window.addEventListener("popstate", handlePdfOverlayPopstate);
 
   const pager = document.getElementById("pdfPager");
@@ -4831,6 +4917,14 @@ async function openPdfOverlay(url, filename){
 }
 function closePdfOverlay(){
   closePdfOverlayInternal();
+  const closingSeq = (history.state && history.state.pdfOverlay) ? history.state.seq : null;
+  if(closingSeq!==null){
+    Promise.resolve().then(()=>{
+      if(history.state && history.state.pdfOverlay && history.state.seq===closingSeq){
+        history.back();
+      }
+    });
+  }
 }
 function handlePdfOverlayPopstate(){
   closePdfOverlayInternal();
@@ -4885,7 +4979,9 @@ function dowLabels(){
 
 async function getWeeklyGoal(){
   await loadSettings();
-  return cachedSettings.weeklyGoal || 3;
+  const v = cachedSettings.weeklyGoal;
+  if(typeof v!=="number" || isNaN(v) || v<1 || v>7) return 3;
+  return Math.round(v);
 }
 
 async function renderExtrasPanel(){
@@ -5072,6 +5168,7 @@ async function renderEntreno(){
             <div class="bname" style="font-weight:700;">${l.title?escapeHtml(l.title):t("sesion_generica")}${l.completed===false?"":' <span style="color:var(--moss-600);">✓</span>'}${feelingInfoLog?` ${feelingInfoLog.icon}`:""}</div>
             <button class="card-menu-btn" style="position:static;flex-shrink:0;" data-log-menu="${l.id}">⋯</button>
           </div>
+          ${l.notes?`<div class="upcoming-desc" style="color:var(--stone-400);font-weight:400;font-size:0.72rem;">${t("ver_descripcion")}</div>`:""}
         </div>
       </div>`;
     }
@@ -5502,19 +5599,19 @@ function timerPresetStageHTML(idx, s){
       ${idx>0?`<button type="button" class="btn-text danger" data-remove-stage="${idx}">${t("btn_eliminar")}</button>`:""}
     </div>
     <label class="field-label">${t("grosor_regleta")} (${t("opcional_label")})</label>
-    <input type="number" class="tp-edge" min="1" placeholder="18" value="${s.edgeMm||""}">
+    <input type="number" class="tp-edge" min="1" max="50" placeholder="18" value="${s.edgeMm||""}">
     <label class="field-label">${t("trabajo_seg")}</label>
-    <input type="number" class="tp-work" min="1" value="${s.workSec}">
+    <input type="number" class="tp-work" min="1" max="3600" value="${s.workSec}">
     <label class="field-label">${t("descanso_seg")}</label>
-    <input type="number" class="tp-rest" min="1" value="${s.restSec}">
+    <input type="number" class="tp-rest" min="1" max="3600" value="${s.restSec}">
     <label class="field-label">${t("rondas")}</label>
-    <input type="number" class="tp-rounds" min="1" value="${s.rounds}">
+    <input type="number" class="tp-rounds" min="1" max="200" value="${s.rounds}">
   </div>`;
 }
 function timerPresetStageRestHTML(idx, mins){
   return `<div class="list-item" style="background:var(--slate-100);box-shadow:none;border:1px solid var(--slate-500);" data-stage-rest-idx="${idx}">
     <label class="field-label">${t("descanso_entre_etapas")}</label>
-    <input type="number" class="tp-stage-rest" min="0.5" step="0.5" value="${mins!=null?mins:5}">
+    <input type="number" class="tp-stage-rest" min="0.5" max="120" step="0.5" value="${mins!=null?mins:5}">
   </div>`;
 }
 function openTimerPresetForm(existing){
@@ -5667,11 +5764,11 @@ function renderTimerPanel(){
   <div class="section-title">${t("sec_ajustes_timer")}</div>
   <div class="list-item">
     <label class="field-label">${t("trabajo_seg")}</label>
-    <input type="number" id="tWork" value="${stage.workSec}" min="1" ${ts.running?"disabled":""}>
+    <input type="number" id="tWork" value="${stage.workSec}" min="1" max="3600" ${ts.running?"disabled":""}>
     <label class="field-label">${t("descanso_seg")}</label>
-    <input type="number" id="tRest" value="${stage.restSec}" min="1" ${ts.running?"disabled":""}>
+    <input type="number" id="tRest" value="${stage.restSec}" min="1" max="3600" ${ts.running?"disabled":""}>
     <label class="field-label">${t("rondas")}</label>
-    <input type="number" id="tRounds" value="${stage.rounds}" min="1" ${ts.running?"disabled":""}>
+    <input type="number" id="tRounds" value="${stage.rounds}" min="1" max="200" ${ts.running?"disabled":""}>
   </div>
   <div class="section-title">${t("sec_entrenos_predet")}</div>
   <div class="guide-hint">${t("entrenos_predet_hint")}</div>
@@ -5738,7 +5835,7 @@ function renderRestBurnPanel(){
       <button class="btn btn-ghost" id="rbReset">${t("reiniciar")}</button>
     </div>
     <label class="field-label">${t("duracion_descanso")}</label>
-    <input type="number" id="rbDuration" value="${(rb.totalSec/60)}" min="0.5" step="0.5" ${rb.running?"disabled":""}>
+    <input type="number" id="rbDuration" value="${(rb.totalSec/60)}" min="0.5" max="180" step="0.5" ${rb.running?"disabled":""}>
   </div>`;
 }
 
@@ -5923,7 +6020,7 @@ function openLogForm(dateStr, existing){
         ${dowLabels().map((d,i)=>`<button type="button" data-dow="${i}">${d}</button>`).join("")}
       </div>
       <label class="field-label">${t("durante_semanas")}</label>
-      <input type="number" id="lRepeatWeeks" value="4" min="1">
+      <input type="number" id="lRepeatWeeks" value="4" min="1" max="52">
       <div class="sheet-sub" style="margin-top:4px;">${t("rutina_hint")}</div>
     </div>
     <div class="btn-row">
@@ -5966,11 +6063,11 @@ function openLogForm(dateStr, existing){
       });
     }
     if(existing){
-      root.querySelector("#lDelete").onclick = async ()=>{
-        if(!confirm(t("confirm_del_entreno"))) return;
-        await dbDelete("training_logs", existing.id);
-        closeSheet();
-        render();
+      root.querySelector("#lDelete").onclick = ()=>{
+        openConfirmSheet(t("eliminar"), t("confirm_del_entreno"), t("eliminar"), async ()=>{
+          await dbDelete("training_logs", existing.id);
+          render();
+        });
       };
     }
     const repeatCheck = root.querySelector("#lRepeat");
@@ -6107,7 +6204,8 @@ function openGoalForm(current){
   `,(root)=>{
     root.querySelector("#gCancel").onclick = closeSheet;
     root.querySelector("#gSave").onclick = async ()=>{
-      const v = parseInt(root.querySelector("#gVal").value,10) || 3;
+      let v = parseInt(root.querySelector("#gVal").value,10) || 3;
+      v = Math.max(1, Math.min(7, v));
       const existing = (await dbGet("meta","settings")) || {id:"settings"};
       existing.weeklyGoal = v;
       await dbPut("meta", existing);
@@ -6963,9 +7061,9 @@ async function renderPerfil(){
       <label class="field-label">${t("tu_nombre")}</label>
       <input type="text" id="pNameEdit" value="${escapeAttr(name)}">
       <label class="field-label">${t("tu_peso")}</label>
-      <input type="number" id="pWeightEdit" min="1" step="0.1" value="${profile&&profile.weight?profile.weight:""}">
+      <input type="number" id="pWeightEdit" min="1" max="300" step="0.1" value="${profile&&profile.weight?profile.weight:""}">
       <label class="field-label">${t("tu_altura")}</label>
-      <input type="number" id="pHeightEdit" min="1" step="1" value="${profile&&profile.height?profile.height:""}">
+      <input type="number" id="pHeightEdit" min="1" max="250" step="1" value="${profile&&profile.height?profile.height:""}">
       <div class="btn-row">
         <button class="btn btn-primary" id="pNameSave">${t("btn_guardar")}</button>
         <button class="btn btn-ghost" id="pNameCancel">${t("btn_cancelar")}</button>
@@ -7240,10 +7338,16 @@ document.getElementById("backupFileInput").addEventListener("change",(e)=>{
   e.target.value = "";
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = async ()=>{
+  reader.onload = ()=>{
+    let data;
     try{
-      const data = JSON.parse(reader.result);
-      if(!confirm(t("confirm_importar"))) return;
+      data = JSON.parse(reader.result);
+    }catch(err){
+      openAlertSheet(t("copia_no_valida_titulo"), t("alert_copia_invalida"));
+      return;
+    }
+    openConfirmSheet(t("importar_copia_titulo"), t("confirm_importar"), t("importar_copia_titulo"), async ()=>{
+    try{
       for(const store of ["locations","sectors","blocks","routes","training_logs","meta","pdfs"]){
         const db = await openDB();
         const tx = db.transaction(store,"readwrite");
@@ -7281,8 +7385,9 @@ document.getElementById("backupFileInput").addEventListener("change",(e)=>{
       toast(t("toast_copia_importada"));
       render();
     }catch(err){
-      alert(t("alert_copia_invalida"));
+      openAlertSheet(t("copia_no_valida_titulo"), t("alert_copia_invalida"));
     }
+    });
   };
   reader.readAsText(file);
 });
@@ -7310,14 +7415,14 @@ async function openPdfCacheManager(){
   }
   openSheet(html,(root)=>{
     root.querySelectorAll("[data-cache-del]").forEach(el=>{
-      el.addEventListener("click", async (e)=>{
+      el.addEventListener("click", (e)=>{
         e.stopPropagation();
         const p = pdfs.find(x=>x.id===el.dataset.cacheDel);
-        if(!confirm(t("confirm_del_liberar",p.filename,formatBytes(p.size)))) return;
-        await dbDelete("pdfs", p.id);
-        closeSheet();
-        toast(t("toast_espacio_liberado"));
-        openPdfCacheManager();
+        openConfirmSheet(t("eliminar"), t("confirm_del_liberar",p.filename,formatBytes(p.size)), t("eliminar"), async ()=>{
+          await dbDelete("pdfs", p.id);
+          toast(t("toast_espacio_liberado"));
+          openPdfCacheManager();
+        });
       });
     });
   });
@@ -7526,9 +7631,9 @@ function openOnboarding(){
     <label class="field-label">${t("tu_nombre")}</label>
     <input type="text" id="obName" placeholder="${t("ph_ej_marta")}">
     <label class="field-label">${t("tu_peso")}</label>
-    <input type="number" id="obWeight" min="1" step="0.1" placeholder="70">
+    <input type="number" id="obWeight" min="1" max="300" step="0.1" placeholder="70">
     <label class="field-label">${t("tu_altura")}</label>
-    <input type="number" id="obHeight" min="1" step="1" placeholder="175">
+    <input type="number" id="obHeight" min="1" max="250" step="1" placeholder="175">
     <label class="field-label">${t("idioma_label")}</label>
     <div class="tabs-row" id="obLang">
       <button type="button" data-val="es" class="active">🇪🇸 Español</button>
