@@ -516,6 +516,9 @@
     overscroll-behavior:contain;
   }
   .sheet h2{margin:0 0 4px; font-size:1.1rem;}
+  .tut-dots{display:flex; justify-content:center; gap:6px; margin-top:16px;}
+  .tut-dot{width:7px; height:7px; border-radius:50%; background:var(--stone-300);}
+  .tut-dot.active{background:var(--moss-600); width:18px; border-radius:4px;}
   .sheet .sheet-sub{font-size:0.8rem; color:var(--ink-700); margin-bottom:10px;}
   .sheet-handle{width:36px;height:4px;background:var(--stone-300);border-radius:4px;margin:0 auto 14px;}
 
@@ -1843,6 +1846,12 @@ const I18N = {
     guias_pdf_guardadas:"Guías PDF guardadas", toca_liberar:"toca 🗑 para borrar una guía y liberar espacio",
     confirm_del_liberar:(n,size)=>`¿Eliminar "${n}" y liberar ${size}?`, toast_espacio_liberado:"Espacio liberado",
     bienvenido:"¡Bienvenido a Climb Diary! 🏔️", como_llamas:"¿Cómo te llamas? Así personalizamos tu diario.",
+    tut1_titulo:"Así funciona Climb Diary", tut1_texto:"Un vistazo rápido antes de empezar: en 4 pasitos te lo cuento todo.",
+    tut2_titulo:"Zonas y sectores", tut2_texto:"Organiza tu escalada así: primero creas una <b>Zona</b> (ej. La Pedriza), dentro añades sus <b>Sectores</b>, y dentro de cada sector, tus <b>Bloques</b> o <b>Vías</b>.",
+    tut3_titulo:"Guías de escalada", tut3_texto:"¿Tienes un croquis o topo en papel de un sector, con dibujos de dónde están los bloques? Puedes escanearlo o hacerle una foto y adjuntarlo como PDF, para consultarlo desde el móvil sin necesidad de cobertura.",
+    tut4_titulo:"Entrenamiento", tut4_texto:"En la pestaña Entreno puedes registrar tus sesiones en un calendario, y usar el cronómetro de suspensiones para entrenar fuerza de dedos.",
+    tut5_titulo:"¡Listo para escalar!", tut5_texto:"Ya sabes lo básico. Explora la app con calma, todo se guarda solo en tu móvil.",
+    tut_siguiente:"Siguiente", tut_atras:"Atrás", tut_saltar:"Saltar", tut_empezar:"Empezar a escalar", ver_tutorial:"Ver tutorial de nuevo",
     default_name:"Escalador/a", atras:"Atrás",
     nivel_label:(i,n)=>`🏅 Nivel ${i} · ${n}`, pts_label:(n)=>`${n} pts`,
     pts_fraccion:(cur,goal)=>`${cur}/${goal} pts`,
@@ -2199,6 +2208,12 @@ const I18N = {
     guias_pdf_guardadas:"Saved guidebooks", toca_liberar:"tap 🗑 to delete a guidebook and free up space",
     confirm_del_liberar:(n,size)=>`Delete "${n}" and free up ${size}?`, toast_espacio_liberado:"Space freed up",
     bienvenido:"Welcome to Climb Diary! 🏔️", como_llamas:"What's your name? Let's personalize your diary.",
+    tut1_titulo:"How Climb Diary works", tut1_texto:"A quick look before you start: 4 short steps and you'll know it all.",
+    tut2_titulo:"Areas and sectors", tut2_texto:"Here's how it's organized: first you create an <b>Area</b> (e.g. Yosemite), inside you add its <b>Sectors</b>, and inside each sector, your <b>Boulders</b> or <b>Routes</b>.",
+    tut3_titulo:"Climbing guides", tut3_texto:"Got a paper topo or sketch for a sector, showing where the boulders are? Scan it or take a photo and attach it as a PDF, so you can check it from your phone without needing signal.",
+    tut4_titulo:"Training", tut4_texto:"In the Training tab you can log your sessions on a calendar, and use the hangboard timer to train finger strength.",
+    tut5_titulo:"Ready to climb!", tut5_texto:"You know the basics now. Explore the app at your own pace — everything stays only on your phone.",
+    tut_siguiente:"Next", tut_atras:"Back", tut_saltar:"Skip", tut_empezar:"Start climbing", ver_tutorial:"Watch tutorial again",
     default_name:"Climber", atras:"Back",
     nivel_label:(i,n)=>`🏅 Level ${i} · ${n}`, pts_label:(n)=>`${n} pts`,
     pts_fraccion:(cur,goal)=>`${cur}/${goal} pts`,
@@ -7151,6 +7166,10 @@ async function openSettingsSheet(){
       <button class="btn btn-ghost" id="setFreeSpace" style="width:100%;">${t("gestionar_liberar")}</button>
     </div>
 
+    <div class="btn-row" style="flex-direction:column;margin-top:22px;">
+      <button class="btn btn-ghost" id="setViewTutorial" style="width:100%;">${t("ver_tutorial")}</button>
+    </div>
+
     <label class="field-label" style="margin-top:22px;">${t("fotos_label")}</label>
     <div class="sheet-sub" style="margin:0 0 8px;">${t("fotos_ocupan", allPhotosList.length, formatBytes(totalPhotoBytes))}</div>
     <div class="btn-row" style="flex-direction:column;">
@@ -7192,6 +7211,9 @@ async function openSettingsSheet(){
     root.querySelector("#setFreeSpace").onclick = ()=>{
       closeSheet();
       openPdfCacheManager();
+    };
+    root.querySelector("#setViewTutorial").onclick = ()=>{
+      openTutorial(0);
     };
     root.querySelector("#setDeleteAllPhotos").onclick = ()=>{
       openConfirmSheet(t("confirm_borrar_fotos_titulo"), t("confirm_borrar_fotos_msg"), t("btn_eliminar"), async ()=>{
@@ -7619,6 +7641,50 @@ function openAddGoalSheet(){
   });
 }
 
+const TUTORIAL_STEPS = [
+  {icon:"🧗", title:"tut1_titulo", body:"tut1_texto"},
+  {icon:"🏔️", title:"tut2_titulo", body:"tut2_texto"},
+  {icon:"📄", title:"tut3_titulo", body:"tut3_texto"},
+  {icon:"💪", title:"tut4_titulo", body:"tut4_texto"},
+  {icon:"🎉", title:"tut5_titulo", body:"tut5_texto"},
+];
+function tutorialStepHTML(idx){
+  const s = TUTORIAL_STEPS[idx];
+  const isLast = idx === TUTORIAL_STEPS.length-1;
+  const dots = TUTORIAL_STEPS.map((_,i)=>`<span class="tut-dot ${i===idx?"active":""}"></span>`).join("");
+  return `
+    <div style="text-align:center;padding:6px 4px 2px;">
+      <div style="font-size:2.8rem;margin-bottom:8px;">${s.icon}</div>
+      <h2 style="margin-bottom:8px;">${t(s.title)}</h2>
+      <div class="sheet-sub" style="text-align:center;line-height:1.55;">${t(s.body)}</div>
+      <div class="tut-dots">${dots}</div>
+    </div>
+    <div class="btn-row" style="flex-direction:column;margin-top:14px;">
+      <button class="btn btn-primary" id="tutNext" style="width:100%;">${isLast?t("tut_empezar"):t("tut_siguiente")}</button>
+      ${idx>0?`<button class="btn btn-ghost" id="tutBack" style="width:100%;">${t("tut_atras")}</button>`:`<button class="btn btn-ghost" id="tutSkip" style="width:100%;">${t("tut_saltar")}</button>`}
+    </div>
+  `;
+}
+function openTutorial(step){
+  step = step||0;
+  openSheet(tutorialStepHTML(step), (root)=>{
+    root.querySelector("#tutNext").onclick = async ()=>{
+      if(step < TUTORIAL_STEPS.length-1){
+        openTutorial(step+1);
+      } else {
+        await dbPut("meta", {id:"tutorial_seen", seen:true});
+        closeSheet();
+      }
+    };
+    const backBtnEl = root.querySelector("#tutBack");
+    if(backBtnEl) backBtnEl.onclick = ()=>openTutorial(step-1);
+    const skipBtnEl = root.querySelector("#tutSkip");
+    if(skipBtnEl) skipBtnEl.onclick = async ()=>{
+      await dbPut("meta", {id:"tutorial_seen", seen:true});
+      closeSheet();
+    };
+  });
+}
 function openOnboarding(){
   openSheet(`
     <h2>${t("bienvenido")}</h2>
@@ -7683,8 +7749,8 @@ function openOnboarding(){
       if(pendingPhoto) profile.avatarPhoto = pendingPhoto;
       await dbPut("meta", profile);
       await saveSettingsPatch({language:selectedLang, gradeSystem:selectedScale});
-      closeSheet();
       render();
+      openTutorial(0);
     };
   });
 }
