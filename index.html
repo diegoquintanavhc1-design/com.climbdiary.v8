@@ -1832,6 +1832,7 @@ const I18N = {
     attempt_flash_pill:"⚡ Flash", pegues_pill:(n)=>`${n} pegues`,
     trabajo_seg:"Trabajo (segundos)", descanso_seg:"Descanso (segundos)", rondas:"Rondas", grosor_regleta:"Grosor de regleta (mm)", ver_descripcion:"Ver descripción",
     pausa:"⏸ Pausa", empezar_timer:"▶ Empezar", reanudar:"▶ Reanudar", reiniciar:"↺ Reiniciar",
+    omitir_descanso:"⏭ Omitir descanso", aplicar_ajustes_timer:"Aplicar", toast_ajustes_aplicados:"Ajustes aplicados",
     ronda:(r,tot)=>`Ronda ${r}/${tot}`, serie_completa:"¡Serie completa! 💪",
     phase_work:"TRABAJO", phase_rest:"DESCANSO", phase_done:"COMPLETADO", phase_idle:"LISTO", phase_ready:"¡PREPÁRATE!",
     editar_perfil:"Editar perfil", tu_nombre:"Tu nombre", ph_ej_marta:"Ej: Marta",
@@ -2199,6 +2200,7 @@ const I18N = {
     attempt_flash_pill:"⚡ Flash", pegues_pill:(n)=>`${n} tries`,
     trabajo_seg:"Work (seconds)", descanso_seg:"Rest (seconds)", rondas:"Rounds", grosor_regleta:"Edge thickness (mm)", ver_descripcion:"View description",
     pausa:"⏸ Pause", empezar_timer:"▶ Start", reanudar:"▶ Resume", reiniciar:"↺ Reset",
+    omitir_descanso:"⏭ Skip rest", aplicar_ajustes_timer:"Apply", toast_ajustes_aplicados:"Settings applied",
     ronda:(r,tot)=>`Round ${r}/${tot}`, serie_completa:"Set complete! 💪",
     phase_work:"WORK", phase_rest:"REST", phase_done:"DONE", phase_idle:"READY", phase_ready:"GET READY!",
     editar_perfil:"Edit profile", tu_nombre:"Your name", ph_ej_marta:"E.g. Sam",
@@ -2701,11 +2703,6 @@ function updateChrome(){
 
 async function render(){
   updateChrome();
-  const onCronometro = state.tab==="entreno" && state.trainingSubTab==="cronometro";
-  if(!onCronometro){
-    if(timerState.running) timerPause();
-    if(restBurnState.running) restBurnPause();
-  }
   if(state.tab === "sectores") await renderSectores();
   else if(state.tab === "entreno") await renderEntreno();
   else if(state.tab === "perfil") await renderPerfil();
@@ -5731,27 +5728,29 @@ function timerStart(){
         timerState.remaining = timerState.stages[timerState.stageIndex].workSec;
         playHornStart();
       } else if(timerState.phase==="work"){
+        const stage = timerState.stages[timerState.stageIndex];
+        const isLastRound = timerState.round >= stage.rounds;
+        const isLastStage = timerState.stageIndex >= timerState.stages.length-1;
+        if(isLastRound && isLastStage){
+          playHornEnd(); vibrateDevice();
+          clearInterval(timerHandle);
+          timerState.running = false;
+          timerState.phase = "done";
+          timerState.remaining = 0;
+          releaseWakeLock();
+          toast(t("serie_completa"));
+          paintTimer();
+          return;
+        }
         timerState.phase = "rest";
-        timerState.remaining = timerState.stages[timerState.stageIndex].restSec;
+        timerState.remaining = stage.restSec;
         playHornWorkEnd();
       } else if(timerState.phase==="rest"){
         const stage = timerState.stages[timerState.stageIndex];
         if(timerState.round >= stage.rounds){
-          if(timerState.stageIndex < timerState.stages.length-1){
-            timerState.phase = "stagerest";
-            timerState.remaining = timerState.stageRests[timerState.stageIndex] || 60;
-            playBeep();
-          } else {
-            playHornEnd(); vibrateDevice();
-            clearInterval(timerHandle);
-            timerState.running = false;
-            timerState.phase = "done";
-            timerState.remaining = 0;
-            releaseWakeLock();
-            toast(t("serie_completa"));
-            paintTimer();
-            return;
-          }
+          timerState.phase = "stagerest";
+          timerState.remaining = timerState.stageRests[timerState.stageIndex] || 60;
+          playBeep();
         } else {
           playHornStart();
           timerState.round += 1;
@@ -5988,6 +5987,7 @@ function renderTimerPanel(){
       <button class="btn btn-success" id="tStart">${ts.running?t("pausa"):t("empezar_timer")}</button>
       <button class="btn btn-ghost" id="tReset">${t("reiniciar")}</button>
     </div>
+    ${ts.phase==="stagerest"?`<div class="btn-row" style="justify-content:center;"><button class="btn btn-ghost" id="tSkipRest" style="width:100%;">${t("omitir_descanso")}</button></div>`:""}
   </div>
   <div class="section-title">${t("sec_ajustes_timer")}</div>
   <div class="list-item">
@@ -5997,6 +5997,7 @@ function renderTimerPanel(){
     <input type="number" id="tRest" value="${stage.restSec}" min="1" max="3600" ${ts.running?"disabled":""}>
     <label class="field-label">${t("rondas")}</label>
     <input type="number" id="tRounds" value="${stage.rounds}" min="1" max="200" ${ts.running?"disabled":""}>
+    ${!ts.running?`<div class="btn-row"><button class="btn btn-primary" id="tApply" style="width:100%;">${t("aplicar_ajustes_timer")}</button></div>`:""}
   </div>
   <div class="section-title">${t("sec_entrenos_predet")}</div>
   <div class="guide-hint">${t("entrenos_predet_hint")}</div>
@@ -6090,6 +6091,34 @@ function wireTimerControls(){
     timerReset();
     render();
   };
+  const applyBtn = document.getElementById("tApply");
+  if(applyBtn){
+    applyBtn.onclick = ()=>{
+      const workSec = parseInt(document.getElementById("tWork").value,10) || 10;
+      const restSec = parseInt(document.getElementById("tRest").value,10) || 5;
+      const rounds = parseInt(document.getElementById("tRounds").value,10) || 6;
+      timerState.stages = [{edgeMm: timerState.stages[0] ? timerState.stages[0].edgeMm : null, workSec, restSec, rounds}];
+      timerState.stageRests = [];
+      timerState.stageIndex = 0;
+      timerState.phase = "idle";
+      timerState.round = 0;
+      timerState.remaining = 0;
+      toast(t("toast_ajustes_aplicados"));
+      render();
+    };
+  }
+  const skipRestBtn = document.getElementById("tSkipRest");
+  if(skipRestBtn){
+    skipRestBtn.onclick = ()=>{
+      if(timerState.phase!=="stagerest") return;
+      timerState.stageIndex += 1;
+      timerState.round = 1;
+      timerState.phase = "work";
+      timerState.remaining = timerState.stages[timerState.stageIndex].workSec;
+      playHornStart();
+      render();
+    };
+  }
   const addPresetBtn = document.getElementById("tAddPreset");
   if(addPresetBtn) addPresetBtn.addEventListener("click", ()=>openTimerPresetForm());
   document.querySelectorAll("[data-preset-view]").forEach(el=>{
