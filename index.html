@@ -2329,11 +2329,17 @@ function tRockType(v){
 
 let cachedProfileName = "";
 let cachedProfilePhotoUrl = null;
+let lastAvatarPhotoSig = null;
 function refreshProfilePhotoUrl(profile){
+  const photo = profile && profile.avatarPhoto;
+  const sig = photo ? `${photo.size}:${photo.type}:${photo.lastModified||0}` : null;
+  const alreadyUpToDate = sig===lastAvatarPhotoSig && (sig===null ? !cachedProfilePhotoUrl : !!cachedProfilePhotoUrl);
+  if(alreadyUpToDate) return;
   if(cachedProfilePhotoUrl){ URL.revokeObjectURL(cachedProfilePhotoUrl); cachedProfilePhotoUrl = null; }
-  if(profile && profile.avatarPhoto){
-    try{ cachedProfilePhotoUrl = URL.createObjectURL(profile.avatarPhoto); }catch(e){}
+  if(photo){
+    try{ cachedProfilePhotoUrl = URL.createObjectURL(photo); }catch(e){}
   }
+  lastAvatarPhotoSig = sig;
 }
 let cachedSettings = {
   id:"settings",

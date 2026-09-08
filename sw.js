@@ -1,4 +1,4 @@
-const CACHE_NAME = "cuaderno-roca-v181";
+const CACHE_NAME = "cuaderno-roca-v182";
 const CORE_ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 const PDFJS_ASSETS = [
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
