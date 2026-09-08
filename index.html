@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" translate="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#211F1C">
 <title>Climb Diary</title>
+<meta name="google" content="notranslate">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -32,6 +33,9 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;height:100%;overscroll-behavior-y:none;}
+  body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overflow-wrap:break-word;}
+  input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
+  .sv-desc,.note-display p,.comment-box{-webkit-user-select:text;user-select:text;}
   body{
     background:#F0E8D6;
     color:var(--ink-900);
@@ -130,7 +134,7 @@
   }
   header.topbar h1{
     font-size:1.18rem; margin:0; font-weight:800; letter-spacing:-0.01em;
-    display:flex; flex-direction:column; gap:1px;
+    display:flex; flex-direction:column; gap:1px; overflow-wrap:break-word; word-break:break-word;
   }
   header.topbar h1 small{
     font-size:0.7rem; font-weight:500; color:rgba(255,255,255,0.88); text-transform:none; letter-spacing:0;
@@ -145,7 +149,7 @@
   .topo-bg{position:fixed; inset:0; width:100vw; height:100vh; z-index:-1; pointer-events:none; display:block;}
   .section-title{
     font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--ink-700); font-weight:700; margin:18px 4px 8px;
+    color:var(--ink-700); font-weight:700; margin:18px 4px 8px; overflow-wrap:break-word; word-break:break-word;
   }
 
   .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
@@ -305,6 +309,7 @@
   .block-row{display:flex; gap:12px; align-items:flex-start;}
   .block-row .block-info{flex:1; min-width:0; padding-right:44px;}
   .block-row .block-info .bname{font-weight:700; font-size:1rem;}
+  .bname{overflow-wrap:break-word; word-break:break-word;}
   .block-row .block-info .bsub{font-size:0.82rem; color:var(--ink-700); margin-top:2px;}
   .block-row .block-info .bsub.bsub-truncate{
     font-size:0.72rem; color:var(--stone-500); overflow:hidden; text-overflow:ellipsis;
@@ -502,7 +507,7 @@
     text-align:center; padding:40px 20px; color:var(--ink-700);
   }
   .empty-state .em-icon{font-size:2.2rem; margin-bottom:8px;}
-  .empty-state p{margin:4px 0; font-size:0.9rem;}
+  .empty-state p{margin:4px 0; font-size:0.9rem; overflow-wrap:break-word; word-break:break-word;}
 
   /* modal */
   .sheet-backdrop{
@@ -763,7 +768,7 @@
   .upcoming-date .ud-dow{font-size:0.6rem; font-weight:800; color:var(--slate-500); text-transform:uppercase;}
   .upcoming-date .ud-num{font-size:1.3rem; font-weight:800; color:var(--ink-900); line-height:1.1;}
   .upcoming-body{flex:1; min-width:0;}
-  .upcoming-title{font-weight:800; font-size:0.95rem;}
+  .upcoming-title{font-weight:800; font-size:0.95rem; overflow-wrap:break-word; word-break:break-word;}
   .upcoming-title .today-tag{
     font-size:0.6rem; background:var(--rust-600); color:#fff; padding:2px 6px; border-radius:8px; vertical-align:middle;
   }
@@ -787,6 +792,25 @@
   }
   .search-bar.mini{display:none; margin:0 4px 12px;}
   .search-bar.mini.open{display:block;}
+  #globalSearchResults{
+    background:var(--paper); border:1px solid var(--stone-300); border-radius:14px;
+    margin:-2px 4px 14px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .search-result-row{
+    display:flex; align-items:center; gap:10px; padding:11px 14px; cursor:pointer;
+    border-bottom:1px solid var(--stone-200);
+  }
+  .search-result-row:last-child{border-bottom:none;}
+  .search-result-row:active{background:var(--stone-100);}
+  .search-result-row .sr-icon{font-size:1.1rem; flex-shrink:0;}
+  .search-result-row .sr-name{flex:1; font-weight:700; font-size:0.88rem; color:var(--ink-900); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .search-result-row .sr-tag{font-size:0.72rem; color:var(--stone-500); flex-shrink:0; max-width:35%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .search-result-empty{padding:14px; text-align:center; font-size:0.85rem; color:var(--stone-500);}
+  @keyframes searchHighlightFlash{
+    0%,100%{box-shadow:var(--shadow);}
+    30%{box-shadow:0 0 0 3px var(--moss-600);}
+  }
+  .search-highlight-flash{animation:searchHighlightFlash 2.2s ease;}
   .section-title-row{display:flex; align-items:center; justify-content:space-between; margin:18px 4px 8px; gap:8px;}
   .section-title-row .section-title{margin:0;}
   .icon-btn-search{
@@ -1551,7 +1575,7 @@ const I18N = {
     stat_zonas:"Zonas", stat_sectores:"Sectores", stat_hechos:"Encadenes", stat_proyectos:"Proyectos",
     stat_total_sesiones:"Total sesiones", stat_esta_semana:"esta semana", stat_este_mes:"este mes", stat_toca_ajustar:"toca para ajustar objetivo",
     sec_zonas_escalada:"Zonas de escalada", sec_proximas_sesiones:"Próxima sesión", sec_calendario:"Calendario",
-    buscar_sector_placeholder:"Buscar sector...",
+    buscar_sector_placeholder:"Buscar sector...", buscar_global_placeholder:"Buscar bloque, sector, zona...",
     buscar_bloques_placeholder:"Buscar bloque...", buscar_vias_placeholder:"Buscar vía...",
     filtros_titulo:"Ordenar y filtrar", ordenar_por:"Ordenar por", orden_recientes:"Más recientes",
     orden_best:"Mejor puntuación", orden_worst:"Peor puntuación", filtrar_por_estilo:"Filtrar por estilo",
@@ -1699,6 +1723,9 @@ const I18N = {
     btn_guardar:"Guardar", btn_cancelar:"Cancelar", btn_eliminar:"Eliminar", btn_editar:"Editar", btn_entendido:"Entendido",
     btn_empezar:"Empezar a escalar", btn_actualizar:"Actualizar", btn_guardar_cambios:"Guardar cambios",
     btn_editar_nombre:"Editar nombre", btn_como_llegar:"Cómo llegar", btn_guardar_aqui:"Guardar aquí",
+    anadir_foto_zona:"📷 Añadir foto", cambiar_foto_zona:"📷 Cambiar foto", quitar_foto_zona:"Quitar foto",
+    confirm_quitar_foto_zona:"¿Quitar la foto de esta zona? Volverá a mostrarse la ilustración por defecto.",
+    toast_foto_zona_guardada:"Foto de la zona guardada", toast_foto_zona_eliminada:"Foto eliminada",
     btn_guardar_nota:"Guardar nota", btn_conseguido:"¡Lo conseguí! 🏆", btn_guardar_hecho:"Guardar como hecho", editar:"Editar", eliminar:"Eliminar", entendido:"Entendido",
     tab_por_hacer:(n)=>`Por hacer (${n})`, tab_hechos:(n)=>`Hechos (${n})`,
     tab_calendario:"Calendario", tab_cronometro:"Cronómetro", tab_extras:"Extras",
@@ -1735,6 +1762,7 @@ const I18N = {
     toast_geo_denegado:"Permiso de ubicación denegado. Actívalo en los ajustes de la app (Android: mantén pulsado el icono → Información de la app → Permisos → Ubicación).",
     toast_geo_timeout:"Ha tardado demasiado en encontrar tu ubicación. Sal a un sitio más abierto e inténtalo de nuevo.",
     toast_geo_no_disponible:"No se pudo determinar tu ubicación ahora mismo. Revisa que el GPS del móvil esté activado.",
+    toast_coordenadas_invalidas:"Coordenadas no válidas. La latitud debe estar entre -90 y 90, y la longitud entre -180 y 180.",
     toast_ubicacion_obtenida:"📍 Ubicación obtenida",
     loc_bar_guardado:"Parking guardado para este sector", loc_bar_guarda:"Guarda la ubicación del parking",
     btn_como_llegar_corto:"Cómo llegar", parking_corto:"Parking", zona_corto:"Zona de bloques", omitir_por_ahora:"Omitir por ahora",
@@ -1821,6 +1849,7 @@ const I18N = {
     intentos:"Intentos", attempt_flash:"Flash", attempt_2:"2 intentos", attempt_3:"3 intentos", attempt_4plus:"+ de 3",
     num_sesiones:"Número de sesiones", sesiones_pill:(n)=>`🗓️ ${n} sesión${n===1?"":"es"}`,
     fotos:"Fotos", confirm_del_foto:"¿Eliminar esta foto?", toast_foto_eliminada:"Foto eliminada", toast_fotos_guardadas:"Fotos guardadas",
+    toast_limite_fotos:(n)=>`Máximo ${n} fotos por bloque/vía`,
     fotos_hint:"Guarda aquí los pies clave, agarres esenciales o cualquier detalle del bloque para no olvidarlo en tu próxima sesión.",
     elige_grado:"Elige un grado",
     bloques_totales:"Bloques totales", grado_mas_alto:"Grado más alto", flash_mas_alto:"Flash más alto",
@@ -1850,6 +1879,7 @@ const I18N = {
     tut2_titulo:"Zonas y sectores", tut2_texto:"Organiza tu escalada así: primero creas una <b>Zona</b> (ej. La Pedriza), dentro añades sus <b>Sectores</b>, y dentro de cada sector, tus <b>Bloques</b> o <b>Vías</b>.",
     tut3_titulo:"Guías de escalada", tut3_texto:"¿Tienes un croquis o topo en papel de un sector, con dibujos de dónde están los bloques? Puedes escanearlo o hacerle una foto y adjuntarlo como PDF, para consultarlo desde el móvil sin necesidad de cobertura.",
     tut4_titulo:"Entrenamiento", tut4_texto:"En la pestaña Entreno puedes registrar tus sesiones en un calendario, y usar el cronómetro de suspensiones para entrenar fuerza de dedos.",
+    tut_ubi_titulo:"Guarda la ubicación", tut_ubi_texto:"En cada bloque o vía puedes guardar sus coordenadas GPS a mano, para no perderte la próxima vez que vayas. Búscalas dentro del formulario, en el apartado \"Ubicación del bloque\".",
     tut5_titulo:"¡Listo para escalar!", tut5_texto:"Ya sabes lo básico. Explora la app con calma, todo se guarda solo en tu móvil.",
     tut_siguiente:"Siguiente", tut_atras:"Atrás", tut_saltar:"Saltar", tut_empezar:"Empezar a escalar", ver_tutorial:"Ver tutorial de nuevo",
     default_name:"Escalador/a", atras:"Atrás",
@@ -1912,7 +1942,7 @@ const I18N = {
     stat_zonas:"Areas", stat_sectores:"Sectors", stat_hechos:"Sent", stat_proyectos:"Projects",
     stat_total_sesiones:"Total sessions", stat_esta_semana:"this week", stat_este_mes:"this month", stat_toca_ajustar:"tap to adjust goal",
     sec_zonas_escalada:"Climbing areas", sec_proximas_sesiones:"Next session", sec_calendario:"Calendar",
-    buscar_sector_placeholder:"Search sector...",
+    buscar_sector_placeholder:"Search sector...", buscar_global_placeholder:"Search boulder, sector, area...",
     buscar_bloques_placeholder:"Search boulder...", buscar_vias_placeholder:"Search route...",
     filtros_titulo:"Sort and filter", ordenar_por:"Sort by", orden_recientes:"Most recent",
     orden_best:"Best rated", orden_worst:"Worst rated", filtrar_por_estilo:"Filter by style",
@@ -2060,6 +2090,9 @@ const I18N = {
     btn_guardar:"Save", btn_cancelar:"Cancel", btn_eliminar:"Delete", btn_editar:"Edit", btn_entendido:"Got it",
     btn_empezar:"Start climbing", btn_actualizar:"Update", btn_guardar_cambios:"Save changes",
     btn_editar_nombre:"Edit name", btn_como_llegar:"Directions", btn_guardar_aqui:"Save here",
+    anadir_foto_zona:"📷 Add photo", cambiar_foto_zona:"📷 Change photo", quitar_foto_zona:"Remove photo",
+    confirm_quitar_foto_zona:"Remove this area's photo? The default illustration will show again.",
+    toast_foto_zona_guardada:"Area photo saved", toast_foto_zona_eliminada:"Photo removed",
     btn_guardar_nota:"Save note", btn_conseguido:"Sent it! 🏆", btn_guardar_hecho:"Mark as sent", editar:"Edit", eliminar:"Delete", entendido:"Got it",
     tab_por_hacer:(n)=>`Projects (${n})`, tab_hechos:(n)=>`Sent (${n})`,
     tab_calendario:"Calendar", tab_cronometro:"Timer", tab_extras:"Extras",
@@ -2096,6 +2129,7 @@ const I18N = {
     toast_geo_denegado:"Location permission denied. Enable it in the app settings (Android: long-press the icon → App info → Permissions → Location).",
     toast_geo_timeout:"Took too long to find your location. Try again somewhere more open.",
     toast_geo_no_disponible:"Couldn't determine your location right now. Check that your phone's GPS is turned on.",
+    toast_coordenadas_invalidas:"Invalid coordinates. Latitude must be between -90 and 90, and longitude between -180 and 180.",
     toast_ubicacion_obtenida:"📍 Location captured",
     loc_bar_guardado:"Parking saved for this sector", loc_bar_guarda:"Save the parking location",
     btn_como_llegar_corto:"Directions", parking_corto:"Parking", zona_corto:"Boulder area", omitir_por_ahora:"Skip for now",
@@ -2182,6 +2216,7 @@ const I18N = {
     intentos:"Attempts", attempt_flash:"Flash", attempt_2:"2 attempts", attempt_3:"3 attempts", attempt_4plus:"3+",
     num_sesiones:"Number of sessions", sesiones_pill:(n)=>`🗓️ ${n} session${n===1?"":"s"}`,
     fotos:"Photos", confirm_del_foto:"Delete this photo?", toast_foto_eliminada:"Photo deleted", toast_fotos_guardadas:"Photos saved",
+    toast_limite_fotos:(n)=>`Maximum ${n} photos per boulder/route`,
     fotos_hint:"Save key footholds, essential holds, or any beta here so you don't forget it next session.",
     elige_grado:"Pick a grade",
     bloques_totales:"Total boulders", grado_mas_alto:"Hardest grade", flash_mas_alto:"Hardest flash",
@@ -2212,6 +2247,7 @@ const I18N = {
     tut2_titulo:"Areas and sectors", tut2_texto:"Here's how it's organized: first you create an <b>Area</b> (e.g. Yosemite), inside you add its <b>Sectors</b>, and inside each sector, your <b>Boulders</b> or <b>Routes</b>.",
     tut3_titulo:"Climbing guides", tut3_texto:"Got a paper topo or sketch for a sector, showing where the boulders are? Scan it or take a photo and attach it as a PDF, so you can check it from your phone without needing signal.",
     tut4_titulo:"Training", tut4_texto:"In the Training tab you can log your sessions on a calendar, and use the hangboard timer to train finger strength.",
+    tut_ubi_titulo:"Save the location", tut_ubi_texto:"On each boulder or route you can save its GPS coordinates by hand, so you don't lose your way next time. You'll find it inside the form, under \"Boulder location\".",
     tut5_titulo:"Ready to climb!", tut5_texto:"You know the basics now. Explore the app at your own pace — everything stays only on your phone.",
     tut_siguiente:"Next", tut_atras:"Back", tut_saltar:"Skip", tut_empezar:"Start climbing", ver_tutorial:"Watch tutorial again",
     default_name:"Climber", atras:"Back",
@@ -2345,6 +2381,8 @@ function setHeader(title, sub, showBack){
   if(headerAction){ headerAction.style.display = "none"; headerAction.innerHTML = ""; }
 }
 
+function isValidLat(v){ return typeof v==="number" && !isNaN(v) && v>=-90 && v<=90; }
+function isValidLng(v){ return typeof v==="number" && !isNaN(v) && v>=-180 && v<=180; }
 function geoErrorMessage(err){
   if(err && err.code===1) return t("toast_geo_denegado");
   if(err && err.code===3) return t("toast_geo_timeout");
@@ -2688,6 +2726,103 @@ async function renderSectores(){
     : renderBlocksView(state.sectStack[0], state.sectStack[1]);
 }
 
+async function wireGlobalSearch(allLocations, allSectors){
+  const input = document.getElementById("globalSearchInput");
+  const resultsBox = document.getElementById("globalSearchResults");
+  if(!input || !resultsBox) return;
+  const [allBlocks, allRoutes] = await Promise.all([dbGetAll("blocks"), dbGetAll("routes")]);
+  const locById = {}; for(const l of allLocations) locById[l.id] = l;
+  const secById = {}; for(const s of allSectors) secById[s.id] = s;
+
+  function paintResults(){
+    const q = input.value.trim().toLowerCase();
+    if(!q){ resultsBox.style.display = "none"; resultsBox.innerHTML = ""; return; }
+    const matchLocs = allLocations.filter(l=>(l.name||"").toLowerCase().includes(q)).slice(0,4);
+    const matchSecs = allSectors.filter(s=>(s.name||"").toLowerCase().includes(q)).slice(0,4);
+    const matchBlocks = allBlocks.filter(b=>(b.name||"").toLowerCase().includes(q)).slice(0,6);
+    const matchRoutes = allRoutes.filter(r=>(r.name||"").toLowerCase().includes(q)).slice(0,6);
+
+    let html = "";
+    for(const l of matchLocs){
+      html += `<div class="search-result-row" data-goto-loc="${l.id}"><span class="sr-icon">🏔️</span><span class="sr-name">${escapeHtml(l.name)}</span><span class="sr-tag">${t("stat_zonas")}</span></div>`;
+    }
+    for(const s of matchSecs){
+      const loc = locById[s.locationId];
+      html += `<div class="search-result-row" data-goto-sec="${s.id}"><span class="sr-icon">📍</span><span class="sr-name">${escapeHtml(s.name)}</span><span class="sr-tag">${loc?escapeHtml(loc.name):""}</span></div>`;
+    }
+    for(const b of matchBlocks){
+      const sec = secById[b.sectorId];
+      html += `<div class="search-result-row" data-goto-block="${b.id}"><span class="sr-icon">🪨</span><span class="sr-name">${escapeHtml(b.name||"")}</span><span class="sr-tag">${sec?escapeHtml(sec.name):""}</span></div>`;
+    }
+    for(const r of matchRoutes){
+      const sec = secById[r.sectorId];
+      html += `<div class="search-result-row" data-goto-route="${r.id}"><span class="sr-icon">🧗</span><span class="sr-name">${escapeHtml(r.name||"")}</span><span class="sr-tag">${sec?escapeHtml(sec.name):""}</span></div>`;
+    }
+    if(!html){
+      html = `<div class="search-result-empty">${t("busqueda_sin_resultados_t")}</div>`;
+    }
+    resultsBox.innerHTML = html;
+    resultsBox.style.display = "block";
+
+    resultsBox.querySelectorAll("[data-goto-loc]").forEach(el=>{
+      el.onclick = async ()=>{
+        const loc = locById[el.dataset.gotoLoc];
+        state.sectStack = [loc];
+        state.sectorSearchOpen = false; state.sectorSearchTerm = "";
+        history.pushState({navDepth:1}, "");
+        await render();
+      };
+    });
+    resultsBox.querySelectorAll("[data-goto-sec]").forEach(el=>{
+      el.onclick = async ()=>{
+        const sec = secById[el.dataset.gotoSec];
+        const loc = locById[sec.locationId];
+        state.climbMode = (sec.climbType||"boulder");
+        state.sectStack = [loc, sec];
+        state.blockFilter = "todo";
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        history.pushState({navDepth:2}, "");
+        await render();
+      };
+    });
+    resultsBox.querySelectorAll("[data-goto-block]").forEach(el=>{
+      el.onclick = async ()=>{
+        const b = allBlocks.find(x=>x.id===el.dataset.gotoBlock);
+        const sec = secById[b.sectorId];
+        const loc = locById[sec.locationId];
+        state.climbMode = "boulder";
+        state.sectStack = [loc, sec];
+        state.blockFilter = b.status;
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        history.pushState({navDepth:2}, "");
+        await render();
+        highlightSearchTarget("block", b.id);
+      };
+    });
+    resultsBox.querySelectorAll("[data-goto-route]").forEach(el=>{
+      el.onclick = async ()=>{
+        const r = allRoutes.find(x=>x.id===el.dataset.gotoRoute);
+        const sec = secById[r.sectorId];
+        const loc = locById[sec.locationId];
+        state.climbMode = "route";
+        state.sectStack = [loc, sec];
+        state.blockFilter = r.status;
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        history.pushState({navDepth:2}, "");
+        await render();
+        highlightSearchTarget("route", r.id);
+      };
+    });
+  }
+  input.addEventListener("input", paintResults);
+}
+function highlightSearchTarget(type, id){
+  const el = mainArea.querySelector(`[data-${type}="${id}"]`);
+  if(!el) return;
+  el.scrollIntoView({behavior:"smooth", block:"center"});
+  el.classList.add("search-highlight-flash");
+  setTimeout(()=>el.classList.remove("search-highlight-flash"), 2200);
+}
 async function renderLocationsView(){
   const profile = await dbGet("meta","profile");
   cachedProfileName = profile ? profile.name : "";
@@ -2732,6 +2867,12 @@ async function renderLocationsView(){
     <div class="stat-chip-sm"><div class="num">${totalTodo}</div><div class="lbl">${t("stat_proyectos")}</div></div>
   </div>`;
 
+  html += `<div class="search-bar" id="globalSearchBar" style="margin:14px 4px 6px;">
+    <span class="search-icon">${searchIconSVG(14)}</span>
+    <input type="search" id="globalSearchInput" maxlength="60" placeholder="${t("buscar_global_placeholder")}">
+  </div>
+  <div id="globalSearchResults" style="display:none;"></div>`;
+
   html += `<div class="section-title">${t("sec_zonas_escalada")}</div>`;
 
   if(locations.length === 0){
@@ -2747,7 +2888,7 @@ async function renderLocationsView(){
       const accent = accentFor(loc.name);
       html += `<div class="card loc-card" style="--accent:${accent}" data-loc="${loc.id}">
         <button class="card-menu-btn" data-menu-loc="${loc.id}">⋯</button>
-        <div class="zone-thumb">${zoneArtSVG(loc.name)}</div>
+        <div class="zone-thumb">${loc.photo?`<img src="${loc.photo}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`:zoneArtSVG(loc.name)}</div>
         <h3>${escapeHtml(loc.name)}</h3>
         <div style="font-size:0.78rem;color:var(--ink-700);">${t("sectores_count",secOfLoc.length)}</div>
         <div class="meta-row">
@@ -2760,6 +2901,8 @@ async function renderLocationsView(){
   }
 
   mainArea.innerHTML = html;
+
+  wireGlobalSearch(allLocations, sectors);
 
   mainArea.querySelectorAll("[data-mode]").forEach(el=>{
     el.addEventListener("click",()=>{
@@ -2793,7 +2936,7 @@ function openLocationForm(existing){
     <h2>${t("loc_form_title",!!existing)}</h2>
     <div class="sheet-sub">${t("loc_form_sub")}</div>
     <label class="field-label">${t("loc_form_name")}</label>
-    <input type="text" id="fLocName" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre")}">
+    <input type="text" id="fLocName" maxlength="60" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre")}">
     <div class="btn-row">
       <button class="btn btn-primary" id="fLocSave">${t("btn_guardar")}</button>
       <button class="btn btn-ghost" id="fLocCancel">${t("btn_cancelar")}</button>
@@ -2818,14 +2961,39 @@ function openLocationForm(existing){
 }
 
 function openLocationMenu(loc){
+  const hasPhoto = !!loc.photo;
   openSheet(`
     <h2>${escapeHtml(loc.name)}</h2>
     <div class="btn-row" style="flex-direction:column;">
       <button class="btn btn-ghost" id="mEdit" style="width:100%;">${t("btn_editar_nombre")}</button>
+      <label class="btn btn-ghost" for="zonePhotoInput" style="width:100%;text-align:center;">${hasPhoto?t("cambiar_foto_zona"):t("anadir_foto_zona")}</label>
+      ${hasPhoto?`<button class="btn btn-ghost" id="mRemovePhoto" style="width:100%;">${t("quitar_foto_zona")}</button>`:""}
+      <input type="file" id="zonePhotoInput" accept="image/*" style="display:none;">
       <button class="btn btn-danger" id="mDelete" style="width:100%;">${t("loc_menu_delete")}</button>
     </div>
   `,(root)=>{
     root.querySelector("#mEdit").onclick = ()=>{ closeSheet(); openLocationForm(loc); };
+    root.querySelector("#zonePhotoInput").addEventListener("change", async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const dataUrl = await compressImageToDataUrl(file, 900, 0.8);
+      loc.photo = dataUrl;
+      await dbPut("locations", loc);
+      closeSheet();
+      toast(t("toast_foto_zona_guardada"));
+      render();
+    });
+    const removeBtn = root.querySelector("#mRemovePhoto");
+    if(removeBtn){
+      removeBtn.onclick = ()=>{
+        openConfirmSheet(t("quitar_foto_zona"), t("confirm_quitar_foto_zona"), t("quitar_foto_zona"), async ()=>{
+          loc.photo = null;
+          await dbPut("locations", loc);
+          toast(t("toast_foto_zona_eliminada"));
+          render();
+        });
+      };
+    }
     root.querySelector("#mDelete").onclick = ()=>{
       openConfirmSheet(t("loc_menu_delete"), t("loc_delete_confirm",loc.name), t("loc_menu_delete"), async ()=>{
         const sectors = (await dbGetAll("sectors")).filter(s=>s.locationId===loc.id);
@@ -2977,7 +3145,7 @@ function openSectorForm(loc, existing){
     <h2>${t("sec_form_title",!!existing)}</h2>
     <div class="sheet-sub">${t("sec_en",loc.name)}</div>
     <label class="field-label">${t("sec_form_name")}</label>
-    <input type="text" id="fSecName" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre")}">
+    <input type="text" id="fSecName" maxlength="60" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre")}">
     <div class="btn-row">
       <button class="btn btn-primary" id="fSecSave">${t("btn_guardar")}</button>
       <button class="btn btn-ghost" id="fSecCancel">${t("btn_cancelar")}</button>
@@ -3570,7 +3738,7 @@ function renderBlockRow(b){
           <button class="icon-edit-btn" data-action="edit-comment" data-block="${b.id}" aria-label="${t("editar")}">✎</button>
         </div>
         ` : `
-        <textarea data-comment-for="${b.id}" placeholder="${t("ph_notas")}">${escapeHtml(b.comment||"")}</textarea>
+        <textarea data-comment-for="${b.id}" maxlength="300" placeholder="${t("ph_notas")}">${escapeHtml(b.comment||"")}</textarea>
         <div class="btn-row">
           <button class="btn btn-ghost" data-action="save-comment" data-block="${b.id}">${t("btn_guardar_nota")}</button>
         </div>
@@ -3579,7 +3747,7 @@ function renderBlockRow(b){
         <div class="photos-hint">${t("fotos_hint")}</div>
         <div class="block-photos">
           ${(b.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).map(p=>`<div class="photo-thumb" data-photo-view="${p.id}" data-block="${b.id}"><img src="${photoUrl(p)}" alt=""></div>`).join("")}
-          <label class="photo-add-btn" data-action="add-photo" data-block="${b.id}" for="blockPhotoInput">+</label>
+          ${(b.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).length < MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" data-action="add-photo" data-block="${b.id}" for="blockPhotoInput">+</label>` : ""}
         </div>
       `}
       <div class="secondary-actions-row">
@@ -3600,7 +3768,7 @@ function openBlockForm(sec, existing){
     <h2>${t("block_form_title",!!existing)}</h2>
     <div class="sheet-sub">${t("sec_en",escapeHtml(sec.name))}</div>
     <label class="field-label">${t("block_name")}</label>
-    <input type="text" id="fBName" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre_bloque")}">
+    <input type="text" id="fBName" maxlength="80" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre_bloque")}">
     <label class="field-label">${t("grado")}</label>
     <div id="fBGradeWheelWrap">${buildGradeWheelHTML("fBGradeWheel", grades, initialGrade)}</div>
     <label class="field-label">${t("numero_bloque")}</label>
@@ -3612,7 +3780,7 @@ function openBlockForm(sec, existing){
       <div class="chip-choice chip-add" id="fBStyleAddBtn">+</div>
     </div>
     <div class="custom-chip-row" id="fBStyleCustomRow" style="display:none;">
-      <input type="text" id="fBStyleCustomInput" class="custom-chip-input" placeholder="${t("ph_personalizado")}">
+      <input type="text" id="fBStyleCustomInput" class="custom-chip-input" maxlength="30" placeholder="${t("ph_personalizado")}">
       <button type="button" class="chip-confirm-btn" id="fBStyleCustomConfirm">✓</button>
     </div>
     <label class="field-label">${t("tipo_roca")}</label>
@@ -3622,7 +3790,7 @@ function openBlockForm(sec, existing){
       <div class="chip-choice chip-add" id="fBRockAddBtn">+</div>
     </div>
     <div class="custom-chip-row" id="fBRockCustomRow" style="display:none;">
-      <input type="text" id="fBRockCustomInput" class="custom-chip-input" placeholder="${t("ph_personalizado")}">
+      <input type="text" id="fBRockCustomInput" class="custom-chip-input" maxlength="30" placeholder="${t("ph_personalizado")}">
       <button type="button" class="chip-confirm-btn" id="fBRockCustomConfirm">✓</button>
     </div>
     <label class="field-label">${t("estado")}</label>
@@ -3697,12 +3865,16 @@ function openBlockForm(sec, existing){
     photoInput.addEventListener("change", async ()=>{
       const files = Array.from(photoInput.files||[]);
       photoInput.value = "";
-      for(const f of files){
+      const spaceLeft = MAX_PHOTOS_PER_ITEM - formPhotos.length;
+      if(spaceLeft<=0){ toast(t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM)); return; }
+      const toAdd = files.slice(0, spaceLeft);
+      for(const f of toAdd){
         try{
           const dataUrl = await compressImageToDataUrl(f);
           formPhotos.push({id:uid(), dataUrl, addedAt:Date.now()});
         }catch(err){ console.error("photo read error", err); }
       }
+      if(files.length>toAdd.length) toast(t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM));
       refreshPhotos();
     });
 
@@ -3712,7 +3884,7 @@ function openBlockForm(sec, existing){
           <img src="${photoUrl(p)}" alt="">
           <button type="button" class="photo-thumb-remove" data-idx="${i}">×</button>
         </div>
-      `).join("") + `<label class="photo-add-btn" for="fBPhotoInput">+</label>`;
+      `).join("") + (formPhotos.length<MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" for="fBPhotoInput">+</label>` : "");
       photosWrap.querySelectorAll("[data-idx]").forEach(btn=>{
         btn.addEventListener("click",()=>{
           formPhotos.splice(parseInt(btn.dataset.idx,10),1);
@@ -3848,10 +4020,19 @@ function openBlockForm(sec, existing){
       if(!name){ toast(t("toast_ponle_nombre_bloque")); return; }
       const grade = selectedGrade;
       const blockNumber = parseInt(root.querySelector("#fBNumber").value,10) || null;
-      const latVal = parseFloat(root.querySelector("#fBLat").value.replace(",","."));
-      const lngVal = parseFloat(root.querySelector("#fBLng").value.replace(",","."));
-      const blockLat = isNaN(latVal) ? null : latVal;
-      const blockLng = isNaN(lngVal) ? null : lngVal;
+      const latValStr = root.querySelector("#fBLat").value.trim();
+      const lngValStr = root.querySelector("#fBLng").value.trim();
+      const latVal = parseFloat(latValStr.replace(",","."));
+      const lngVal = parseFloat(lngValStr.replace(",","."));
+      let blockLat = null, blockLng = null;
+      if(latValStr || lngValStr){
+        if(!isValidLat(latVal) || !isValidLng(lngVal)){
+          toast(t("toast_coordenadas_invalidas"));
+          return;
+        }
+        blockLat = latVal;
+        blockLng = lngVal;
+      }
       const comment = root.querySelector("#fBComment").value.trim();
       const styleTags = Array.from(selectedTags);
       const wasNotDone = !existing || existing.status !== "done";
@@ -4292,7 +4473,7 @@ function renderRouteRow(r){
           <button class="icon-edit-btn" data-action="edit-comment-route" data-route="${r.id}" aria-label="${t("editar")}">✎</button>
         </div>
         ` : `
-        <textarea data-comment-for="${r.id}" placeholder="${t("ph_notas")}">${escapeHtml(r.comment||"")}</textarea>
+        <textarea data-comment-for="${r.id}" maxlength="300" placeholder="${t("ph_notas")}">${escapeHtml(r.comment||"")}</textarea>
         <div class="btn-row">
           <button class="btn btn-ghost" data-action="save-comment-route" data-route="${r.id}">${t("btn_guardar_nota")}</button>
         </div>
@@ -4301,7 +4482,7 @@ function renderRouteRow(r){
         <div class="photos-hint">${t("fotos_hint")}</div>
         <div class="block-photos">
           ${(r.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).map(p=>`<div class="photo-thumb" data-photo-view-route="${p.id}" data-route="${r.id}"><img src="${photoUrl(p)}" alt=""></div>`).join("")}
-          <label class="photo-add-btn" data-action="add-photo-route" data-route="${r.id}" for="routePhotoInput">+</label>
+          ${(r.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).length < MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" data-action="add-photo-route" data-route="${r.id}" for="routePhotoInput">+</label>` : ""}
         </div>
       `}
       <div class="secondary-actions-row">
@@ -4322,7 +4503,7 @@ function openRouteForm(sec, existing){
     <h2>${t("route_form_title",!!existing)}</h2>
     <div class="sheet-sub">${t("sec_en",escapeHtml(sec.name))}</div>
     <label class="field-label">${t("route_name")}</label>
-    <input type="text" id="rName" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre_bloque")}">
+    <input type="text" id="rName" maxlength="80" value="${existing?escapeAttr(existing.name):""}" placeholder="${t("ph_nombre_bloque")}">
     <label class="field-label">${t("grado")}</label>
     <div id="rGradeWheelWrap">${buildGradeWheelHTML("rGradeWheel", grades, initialGrade)}</div>
     <label class="field-label">${t("tipo_roca")}</label>
@@ -4332,7 +4513,7 @@ function openRouteForm(sec, existing){
       <div class="chip-choice chip-add" id="rRockAddBtn">+</div>
     </div>
     <div class="custom-chip-row" id="rRockCustomRow" style="display:none;">
-      <input type="text" id="rRockCustomInput" class="custom-chip-input" placeholder="${t("ph_personalizado")}">
+      <input type="text" id="rRockCustomInput" class="custom-chip-input" maxlength="30" placeholder="${t("ph_personalizado")}">
       <button type="button" class="chip-confirm-btn" id="rRockCustomConfirm">✓</button>
     </div>
     <label class="field-label">${t("estilo_escalada")}</label>
@@ -4342,7 +4523,7 @@ function openRouteForm(sec, existing){
       <div class="chip-choice chip-add" id="rStyleAddBtn">+</div>
     </div>
     <div class="custom-chip-row" id="rStyleCustomRow" style="display:none;">
-      <input type="text" id="rStyleCustomInput" class="custom-chip-input" placeholder="${t("ph_personalizado")}">
+      <input type="text" id="rStyleCustomInput" class="custom-chip-input" maxlength="30" placeholder="${t("ph_personalizado")}">
       <button type="button" class="chip-confirm-btn" id="rStyleCustomConfirm">✓</button>
     </div>
     <label class="field-label">${t("altura_via")}</label>
@@ -4423,12 +4604,16 @@ function openRouteForm(sec, existing){
     photoInput.addEventListener("change", async ()=>{
       const files = Array.from(photoInput.files||[]);
       photoInput.value = "";
-      for(const f of files){
+      const spaceLeft = MAX_PHOTOS_PER_ITEM - formPhotos.length;
+      if(spaceLeft<=0){ toast(t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM)); return; }
+      const toAdd = files.slice(0, spaceLeft);
+      for(const f of toAdd){
         try{
           const dataUrl = await compressImageToDataUrl(f);
           formPhotos.push({id:uid(), dataUrl, addedAt:Date.now()});
         }catch(err){ console.error("photo read error", err); }
       }
+      if(files.length>toAdd.length) toast(t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM));
       refreshPhotos();
     });
     function refreshPhotos(){
@@ -4437,7 +4622,7 @@ function openRouteForm(sec, existing){
           <img src="${photoUrl(p)}" alt="">
           <button type="button" class="photo-thumb-remove" data-idx="${i}">×</button>
         </div>
-      `).join("") + `<label class="photo-add-btn" for="rPhotoInput">+</label>`;
+      `).join("") + (formPhotos.length<MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" for="rPhotoInput">+</label>` : "");
       photosWrap.querySelectorAll("[data-idx]").forEach(btn=>{
         btn.addEventListener("click",()=>{
           formPhotos.splice(parseInt(btn.dataset.idx,10),1);
@@ -4575,10 +4760,19 @@ function openRouteForm(sec, existing){
       const length = parseInt(root.querySelector("#rLength").value,10) || null;
       const bolts = parseInt(root.querySelector("#rBolts").value,10) || null;
       const numAttempts = parseInt(root.querySelector("#rAttempts").value,10) || null;
-      const latValR = parseFloat(root.querySelector("#rLat").value.replace(",","."));
-      const lngValR = parseFloat(root.querySelector("#rLng").value.replace(",","."));
-      const routeLat = isNaN(latValR) ? null : latValR;
-      const routeLng = isNaN(lngValR) ? null : lngValR;
+      const latValRStr = root.querySelector("#rLat").value.trim();
+      const lngValRStr = root.querySelector("#rLng").value.trim();
+      const latValR = parseFloat(latValRStr.replace(",","."));
+      const lngValR = parseFloat(lngValRStr.replace(",","."));
+      let routeLat = null, routeLng = null;
+      if(latValRStr || lngValRStr){
+        if(!isValidLat(latValR) || !isValidLng(lngValR)){
+          toast(t("toast_coordenadas_invalidas"));
+          return;
+        }
+        routeLat = latValR;
+        routeLng = lngValR;
+      }
       const climbStyles = Array.from(selectedClimbStyles);
       const wasNotDone = !existing || existing.status !== "done";
       const justCompleted = status==="done" && wasNotDone;
@@ -4813,6 +5007,7 @@ document.getElementById("photoLightboxDelete").addEventListener("click", ()=>{
   });
 });
 
+const MAX_PHOTOS_PER_ITEM = 6;
 let pendingPhotoBlockId = null;
 document.getElementById("blockPhotoInput").addEventListener("change", async (e)=>{
   const files = Array.from(e.target.files||[]);
@@ -4822,11 +5017,17 @@ document.getElementById("blockPhotoInput").addEventListener("change", async (e)=
   pendingPhotoBlockId = null;
   if(!block) return;
   block.photos = block.photos || [];
-  for(const f of files){
+  const spaceLeft = MAX_PHOTOS_PER_ITEM - block.photos.length;
+  if(spaceLeft<=0){
+    toast(t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM));
+    return;
+  }
+  const toAdd = files.slice(0, spaceLeft);
+  for(const f of toAdd){
     block.photos.push({id:uid(), blob:f, addedAt:Date.now()});
   }
   await dbPut("blocks", block);
-  toast(t("toast_fotos_guardadas"));
+  toast(files.length>toAdd.length ? t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM) : t("toast_fotos_guardadas"));
   render();
 });
 document.getElementById("routePhotoInput").addEventListener("change", async (e)=>{
@@ -4837,11 +5038,17 @@ document.getElementById("routePhotoInput").addEventListener("change", async (e)=
   pendingPhotoRouteId = null;
   if(!route) return;
   route.photos = route.photos || [];
-  for(const f of files){
+  const spaceLeft = MAX_PHOTOS_PER_ITEM - route.photos.length;
+  if(spaceLeft<=0){
+    toast(t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM));
+    return;
+  }
+  const toAdd = files.slice(0, spaceLeft);
+  for(const f of toAdd){
     route.photos.push({id:uid(), blob:f, addedAt:Date.now()});
   }
   await dbPut("routes", route);
-  toast(t("toast_fotos_guardadas"));
+  toast(files.length>toAdd.length ? t("toast_limite_fotos",MAX_PHOTOS_PER_ITEM) : t("toast_fotos_guardadas"));
   render();
 });
 
@@ -5640,7 +5847,7 @@ function openTimerPresetForm(existing){
   openSheet(`
     <h2>${existing?t("editar_entreno_predet"):t("nuevo_entreno_predet")}</h2>
     <label class="field-label">${t("nombre_entreno_predet")}</label>
-    <input type="text" id="tpName" placeholder="${t("ph_entreno_predet")}" value="${existing?escapeAttr(existing.name):""}">
+    <input type="text" id="tpName" maxlength="60" placeholder="${t("ph_entreno_predet")}" value="${existing?escapeAttr(existing.name):""}">
     <div id="tpStagesContainer">${stagesHtml}</div>
     <div class="btn-row"><button type="button" class="btn btn-ghost" id="tpAddStage" style="width:100%;">${t("anadir_etapa")}</button></div>
     <div class="btn-row">
@@ -6007,7 +6214,8 @@ function openLogForm(dateStr, existing){
     <label class="field-label">${t("fecha")}</label>
     <input type="date" id="lDate" value="${targetDateStr}">
     <label class="field-label">${t("titulo")}</label>
-    <input type="text" id="lTitle" placeholder="${t("ph_titulo_sesion")}" value="${existing?escapeAttr(existing.title||""):""}">
+    <input type="text" id="lTitle" maxlength="60" placeholder="${t("ph_titulo_sesion")}" value="${existing?escapeAttr(existing.title||""):""}">
+    <div class="sheet-sub" style="margin:2px 0 0;text-align:right;font-size:0.7rem;" id="lTitleCount">0/60</div>
     <label class="field-label">${t("color_sesion_label")}</label>
     <div class="color-swatch-row" id="lColorRow">
       ${SESSION_COLORS.map(c=>`<button type="button" class="color-swatch ${(existing?(existing.color||"slate"):"slate")===c.key?"selected":""}" data-color="${c.key}" style="background:${c.hex};"></button>`).join("")}
@@ -6025,7 +6233,7 @@ function openLogForm(dateStr, existing){
     `}
     <label class="field-label">${t("desc_sesion")}</label>
     <div class="sheet-sub" style="margin:0 0 4px;">${t("desc_sesion_bullets_hint")}</div>
-    <textarea id="lNotes" placeholder="${t("ph_desc_sesion")}">${existing?escapeHtml(existing.notes||""):""}</textarea>
+    <textarea id="lNotes" maxlength="300" placeholder="${t("ph_desc_sesion")}">${existing?escapeHtml(existing.notes||""):""}</textarea>
     <label class="field-label">
       <input type="checkbox" id="lRepeat" style="width:auto;display:inline;"> ${t("repetir_rutina")}
     </label>
@@ -6046,6 +6254,11 @@ function openLogForm(dateStr, existing){
   `,(root)=>{
     // autofocus quitado (evita el bug de doble toque en iOS)
     root.querySelector("#lCancel").onclick = closeSheet;
+    const lTitleEl = root.querySelector("#lTitle");
+    const lTitleCountEl = root.querySelector("#lTitleCount");
+    const updateTitleCount = ()=>{ lTitleCountEl.textContent = `${lTitleEl.value.length}/60`; };
+    updateTitleCount();
+    lTitleEl.addEventListener("input", updateTitleCount);
     let selectedDows = new Set();
     let selectedCategory = existing ? (existing.category||"roca") : "roca";
     let selectedFeeling = existing ? (existing.feeling||null) : null;
@@ -7074,7 +7287,7 @@ async function renderPerfil(){
         <input type="file" id="pPhotoInput" accept="image/*" style="display:none;">
       </div>
       <label class="field-label">${t("tu_nombre")}</label>
-      <input type="text" id="pNameEdit" value="${escapeAttr(name)}">
+      <input type="text" id="pNameEdit" maxlength="40" value="${escapeAttr(name)}">
       <label class="field-label">${t("tu_peso")}</label>
       <input type="number" id="pWeightEdit" min="1" max="300" step="0.1" value="${profile&&profile.weight?profile.weight:""}">
       <label class="field-label">${t("tu_altura")}</label>
@@ -7126,7 +7339,7 @@ async function openSettingsSheet(){
     <h2>${t("ajustes")}</h2>
 
     <label class="field-label">${t("cuenta_titulo")}</label>
-    <input type="text" id="setAccName" value="${escapeAttr(profile.name||"")}" placeholder="${t("ph_ej_marta")}">
+    <input type="text" id="setAccName" maxlength="40" value="${escapeAttr(profile.name||"")}" placeholder="${t("ph_ej_marta")}">
     <div class="btn-row">
       <button class="btn btn-primary" id="setAccSave" style="width:100%;">${t("guardar_cambios_cuenta")}</button>
     </div>
@@ -7598,7 +7811,7 @@ function openAddTrainingGoalSheet(){
   openSheet(`
     <h2>${t("nuevo_objetivo")}</h2>
     <label class="field-label">${t("objetivos_entreno_titulo")}</label>
-    <input type="text" id="tgText" placeholder="${t("objetivo_entreno_placeholder")}">
+    <input type="text" id="tgText" maxlength="100" placeholder="${t("objetivo_entreno_placeholder")}">
     <div class="btn-row">
       <button class="btn btn-primary" id="tgSave">${t("btn_guardar")}</button>
       <button class="btn btn-ghost" id="tgCancel">${t("btn_cancelar")}</button>
@@ -7621,7 +7834,7 @@ function openAddGoalSheet(){
   openSheet(`
     <h2>${t("nuevo_objetivo")}</h2>
     <label class="field-label">${t("objetivos_temporada")}</label>
-    <input type="text" id="gText" placeholder="${t("objetivo_placeholder")}">
+    <input type="text" id="gText" maxlength="100" placeholder="${t("objetivo_placeholder")}">
     <div class="btn-row">
       <button class="btn btn-primary" id="gSave2">${t("btn_guardar")}</button>
       <button class="btn btn-ghost" id="gCancel2">${t("btn_cancelar")}</button>
@@ -7645,6 +7858,7 @@ const TUTORIAL_STEPS = [
   {icon:"🧗", title:"tut1_titulo", body:"tut1_texto"},
   {icon:"🏔️", title:"tut2_titulo", body:"tut2_texto"},
   {icon:"📄", title:"tut3_titulo", body:"tut3_texto"},
+  {icon:"📍", title:"tut_ubi_titulo", body:"tut_ubi_texto"},
   {icon:"💪", title:"tut4_titulo", body:"tut4_texto"},
   {icon:"🎉", title:"tut5_titulo", body:"tut5_texto"},
 ];
@@ -7695,7 +7909,7 @@ function openOnboarding(){
       <input type="file" id="obPhotoInput" accept="image/*" style="display:none;">
     </div>
     <label class="field-label">${t("tu_nombre")}</label>
-    <input type="text" id="obName" placeholder="${t("ph_ej_marta")}">
+    <input type="text" id="obName" maxlength="40" placeholder="${t("ph_ej_marta")}">
     <label class="field-label">${t("tu_peso")}</label>
     <input type="number" id="obWeight" min="1" max="300" step="0.1" placeholder="70">
     <label class="field-label">${t("tu_altura")}</label>
