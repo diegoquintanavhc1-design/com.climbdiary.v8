@@ -307,9 +307,9 @@
   .badge.grade-black{background:var(--ink-900);}
   .badge.grade-purple{background:var(--plum-600);}
   .block-row{display:flex; gap:12px; align-items:flex-start;}
-  .block-row .block-info{flex:1; min-width:0; padding-right:44px;}
+  .block-row .block-info{flex:1; min-width:0; padding-right:8px;}
   .block-row .block-info .bname{font-weight:700; font-size:1rem;}
-  .bname{overflow-wrap:break-word; word-break:break-word;}
+  .bname{overflow-wrap:break-word; word-break:break-word; padding-right:112px;}
   .block-row .block-info .bsub{font-size:0.82rem; color:var(--ink-700); margin-top:2px;}
   .block-row .block-info .bsub.bsub-truncate{
     font-size:0.72rem; color:var(--stone-500); overflow:hidden; text-overflow:ellipsis;
@@ -421,6 +421,11 @@
     width:60px; height:60px; border-radius:10px; border:2px dashed var(--stone-300);
     background:none; color:var(--stone-500); font-size:1.4rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .photo-limit-hint{
+    width:60px; height:60px; border-radius:10px; border:1px solid var(--stone-300);
+    background:var(--stone-100); color:var(--stone-500); font-size:0.62rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; text-align:center; flex-shrink:0; line-height:1.2; padding:4px;
   }
 
   .photo-lightbox{
@@ -890,7 +895,7 @@
     font-size:0.7rem; font-weight:800; color:#fff; padding:0;
   }
   .goal-check.done{background:var(--moss-600); border-color:var(--moss-600);}
-  .goal-text{flex:1; font-size:0.9rem; color:var(--ink-900);}
+  .goal-text{flex:1; font-size:0.9rem; color:var(--ink-900); overflow-wrap:break-word; word-break:break-word; min-width:0;}
   .goal-text.done{text-decoration:line-through; color:var(--stone-500);}
   .goal-remove{background:none; border:none; color:var(--stone-500); font-size:1.1rem; cursor:pointer; padding:2px 6px; flex-shrink:0;}
 
@@ -1108,6 +1113,7 @@ const state = {
   itemSortMode: "recent", // 'recent' | 'best' | 'worst' | 'grade_asc' | 'grade_desc' dentro de un sector
   itemStyleFilter: new Set(), // filtro de estilos (Placa, Techo, etc.) dentro de un sector
   itemGradeMin: null, itemGradeMax: null, // rango de grado (strings) dentro de un sector
+  itemPriorityFilter: null, // 'super' | 'radar' | 'discarded' | null
   perfilBlockSearch: "", perfilBlockSort: "best", // historial de bloques hechos en Perfil
   perfilBlockStyleFilter: new Set(), perfilBlockRockFilter: new Set(),
   perfilRouteSearch: "", perfilRouteSort: "best", // historial de vías hechas en Perfil
@@ -1148,9 +1154,9 @@ function getPriority(item){
 function priorityRank(item){
   const p = getPriority(item);
   if(p==="super") return 0;
-  if(p==="radar") return 2;
+  if(p==="radar") return 1;
   if(p==="discarded") return 3;
-  return 1;
+  return 2;
 }
 function attemptPillHTML(v){
   if(!v) return "";
@@ -1579,6 +1585,7 @@ const I18N = {
     buscar_bloques_placeholder:"Buscar bloque...", buscar_vias_placeholder:"Buscar vía...",
     filtros_titulo:"Ordenar y filtrar", ordenar_por:"Ordenar por", orden_recientes:"Más recientes",
     orden_best:"Mejor puntuación", orden_worst:"Peor puntuación", filtrar_por_estilo:"Filtrar por estilo",
+    filtrar_por_estado:"Filtrar por estado",
     orden_grade_asc:"Grado: fácil a difícil", orden_grade_desc:"Grado: difícil a fácil",
     filtrar_por_grado:"Filtrar por grado", desde:"Desde", hasta:"Hasta",
     btn_aplicar:"Aplicar", btn_quitar_filtros:"Quitar filtros",
@@ -1691,6 +1698,7 @@ const I18N = {
     sec_temporizador:"Temporizador de suspensiones", sec_ajustes_timer:"Ajustes",
     phase_stagerest:"CAMBIO DE ETAPA", etapa_info:(i,tot,mm)=>`Etapa ${i}/${tot}${mm?` · ${mm}mm`:""}`,
     etapa_num:(i)=>`Etapa ${i}`, anadir_etapa:"+ Añadir etapa", descanso_entre_etapas:"Descanso hasta la siguiente etapa (minutos)",
+    toast_limite_etapas:"Máximo 10 etapas por entrenamiento",
     sin_regleta:"Sin regleta", etapas_cantidad:(n)=>`${n} etapas`,
     sec_entrenos_predet:"Entrenamientos predeterminados",
     entrenos_predet_hint:"Guarda tus combinaciones de regleta, trabajo, descanso y rondas para no tener que ponerlas cada vez.",
@@ -1851,13 +1859,14 @@ const I18N = {
     num_sesiones:"Número de sesiones", sesiones_pill:(n)=>`🗓️ ${n} sesión${n===1?"":"es"}`,
     fotos:"Fotos", confirm_del_foto:"¿Eliminar esta foto?", toast_foto_eliminada:"Foto eliminada", toast_fotos_guardadas:"Fotos guardadas",
     toast_limite_fotos:(n)=>`Máximo ${n} fotos por bloque/vía`,
+    limite_fotos_alcanzado:(n)=>`Límite de ${n} fotos`,
     fotos_hint:"Guarda aquí los pies clave, agarres esenciales o cualquier detalle del bloque para no olvidarlo en tu próxima sesión.",
     elige_grado:"Elige un grado",
     bloques_totales:"Bloques totales", grado_mas_alto:"Grado más alto", flash_mas_alto:"Flash más alto",
     vias_totales:"Vías totales", sec_vias_grado:"Vías por grado", sec_todas_vias:"Todas tus vías hechas",
     sin_dato_guion:"—",
     ajustes:"Ajustes", sistema_graduacion:"Sistema de graduación",    font_label:"Fontainebleau (6A, 7A+, 8A)", vscale_label:"Hueco / V-Scale (V3, V7, V10)",
-    idioma:"Idioma", espanol:"Español", ingles:"English", idioma_hint:"La interfaz está en español por ahora. Guardamos tu preferencia para cuando añadamos inglés completo.",
+    idioma:"Idioma", espanol:"Español", ingles:"English", idioma_hint:"Cambia el idioma de toda la app al instante.",
     unidades_peso:"Unidades de peso",
     privacidad_perfil:"Privacidad del perfil", publico:"Público", solo_amigos:"Solo amigos", privado:"Privado",
     privacidad_hint:"Ahora mismo la app es 100% local — esto queda listo para cuando lleguen las funciones sociales.",
@@ -1947,6 +1956,7 @@ const I18N = {
     buscar_bloques_placeholder:"Search boulder...", buscar_vias_placeholder:"Search route...",
     filtros_titulo:"Sort and filter", ordenar_por:"Sort by", orden_recientes:"Most recent",
     orden_best:"Best rated", orden_worst:"Worst rated", filtrar_por_estilo:"Filter by style",
+    filtrar_por_estado:"Filter by status",
     orden_grade_asc:"Grade: easy to hard", orden_grade_desc:"Grade: hard to easy",
     filtrar_por_grado:"Filter by grade", desde:"From", hasta:"To",
     btn_aplicar:"Apply", btn_quitar_filtros:"Clear filters",
@@ -2059,6 +2069,7 @@ const I18N = {
     sec_temporizador:"Hangboard timer", sec_ajustes_timer:"Settings",
     phase_stagerest:"STAGE CHANGE", etapa_info:(i,tot,mm)=>`Stage ${i}/${tot}${mm?` · ${mm}mm`:""}`,
     etapa_num:(i)=>`Stage ${i}`, anadir_etapa:"+ Add stage", descanso_entre_etapas:"Rest until next stage (minutes)",
+    toast_limite_etapas:"Maximum 10 stages per workout",
     sin_regleta:"No edge", etapas_cantidad:(n)=>`${n} stages`,
     sec_entrenos_predet:"Preset workouts",
     entrenos_predet_hint:"Save your edge, work, rest and rounds combos so you don't have to set them every time.",
@@ -2219,6 +2230,7 @@ const I18N = {
     num_sesiones:"Number of sessions", sesiones_pill:(n)=>`🗓️ ${n} session${n===1?"":"s"}`,
     fotos:"Photos", confirm_del_foto:"Delete this photo?", toast_foto_eliminada:"Photo deleted", toast_fotos_guardadas:"Photos saved",
     toast_limite_fotos:(n)=>`Maximum ${n} photos per boulder/route`,
+    limite_fotos_alcanzado:(n)=>`Limit of ${n} photos`,
     fotos_hint:"Save key footholds, essential holds, or any beta here so you don't forget it next session.",
     elige_grado:"Pick a grade",
     bloques_totales:"Total boulders", grado_mas_alto:"Hardest grade", flash_mas_alto:"Hardest flash",
@@ -2389,6 +2401,13 @@ function setHeader(title, sub, showBack){
   if(headerAction){ headerAction.style.display = "none"; headerAction.innerHTML = ""; }
 }
 
+function setViewportZoomEnabled(enabled){
+  const meta = document.querySelector('meta[name="viewport"]');
+  if(!meta) return;
+  meta.setAttribute("content", enabled
+    ? "width=device-width, initial-scale=1, viewport-fit=cover"
+    : "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
+}
 function isValidLat(v){ return typeof v==="number" && !isNaN(v) && v>=-90 && v<=90; }
 function isValidLng(v){ return typeof v==="number" && !isNaN(v) && v>=-180 && v<=180; }
 function geoErrorMessage(err){
@@ -2510,12 +2529,21 @@ function openItemFilterSheet(availableStyles, availableGrades, onApply){
   let maxIdxVal = state.itemGradeMax ? Math.max(0, availableGrades.indexOf(state.itemGradeMax)) : maxIdx;
   if(minIdx<0) minIdx = 0;
   if(maxIdxVal<0) maxIdxVal = maxIdx;
-  const hasActiveFilters = state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax;
+  const hasActiveFilters = state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax || !!state.itemPriorityFilter;
+  const priorityOptions = [
+    {key:"super", label:"⭐ "+t("super_proyecto_on")},
+    {key:"radar", label:t("radar_badge")},
+    {key:"discarded", label:"🗑️ "+t("btn_abandono")},
+  ];
   openSheet(`
     <h2>${t("filtros_titulo")}</h2>
     <label class="field-label">${t("ordenar_por")}</label>
     <div class="chip-grid" id="sortChips">
       ${sortOptions.map(o=>`<div class="chip-choice ${state.itemSortMode===o.key?'selected':''}" data-sort="${o.key}">${o.label}</div>`).join("")}
+    </div>
+    <label class="field-label">${t("filtrar_por_estado")}</label>
+    <div class="chip-grid" id="priorityChips">
+      ${priorityOptions.map(o=>`<div class="chip-choice ${state.itemPriorityFilter===o.key?'selected':''}" data-priority="${o.key}">${o.label}</div>`).join("")}
     </div>
     <label class="field-label">${t("filtrar_por_estilo")}</label>
     <div class="chip-grid" id="styleChips">
@@ -2538,12 +2566,25 @@ function openItemFilterSheet(availableStyles, availableGrades, onApply){
     </div>
   `,(root)=>{
     let sortMode = state.itemSortMode;
+    let priorityMode = state.itemPriorityFilter;
     const styleSet = new Set(state.itemStyleFilter);
     root.querySelectorAll("[data-sort]").forEach(el=>{
       el.addEventListener("click",()=>{
         sortMode = el.dataset.sort;
         root.querySelectorAll("[data-sort]").forEach(x=>x.classList.remove("selected"));
         el.classList.add("selected");
+      });
+    });
+    root.querySelectorAll("[data-priority]").forEach(el=>{
+      el.addEventListener("click",()=>{
+        if(priorityMode === el.dataset.priority){
+          priorityMode = null;
+          el.classList.remove("selected");
+        } else {
+          priorityMode = el.dataset.priority;
+          root.querySelectorAll("[data-priority]").forEach(x=>x.classList.remove("selected"));
+          el.classList.add("selected");
+        }
       });
     });
     root.querySelectorAll("[data-style]").forEach(el=>{
@@ -2570,6 +2611,7 @@ function openItemFilterSheet(availableStyles, availableGrades, onApply){
     root.querySelector("#filterApply").onclick = ()=>{
       state.itemSortMode = sortMode;
       state.itemStyleFilter = styleSet;
+      state.itemPriorityFilter = priorityMode;
       const gMin = parseInt(gMinSlider.value,10);
       const gMax = parseInt(gMaxSlider.value,10);
       if(gMin===0 && gMax===maxIdx){
@@ -2587,6 +2629,7 @@ function openItemFilterSheet(availableStyles, availableGrades, onApply){
       clearBtn.onclick = ()=>{
         state.itemSortMode = "recent";
         state.itemStyleFilter = new Set();
+        state.itemPriorityFilter = null;
         state.itemGradeMin = null;
         state.itemGradeMax = null;
         closeSheet();
@@ -2783,7 +2826,7 @@ async function wireGlobalSearch(allLocations, allSectors){
         state.climbMode = (sec.climbType||"boulder");
         state.sectStack = [loc, sec];
         state.blockFilter = "todo";
-        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
         history.pushState({navDepth:2}, "");
         await render();
       };
@@ -2796,7 +2839,7 @@ async function wireGlobalSearch(allLocations, allSectors){
         state.climbMode = "boulder";
         state.sectStack = [loc, sec];
         state.blockFilter = b.status;
-        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
         history.pushState({navDepth:2}, "");
         await render();
         highlightSearchTarget("block", b.id);
@@ -2810,7 +2853,7 @@ async function wireGlobalSearch(allLocations, allSectors){
         state.climbMode = "route";
         state.sectStack = [loc, sec];
         state.blockFilter = r.status;
-        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
         history.pushState({navDepth:2}, "");
         await render();
         highlightSearchTarget("route", r.id);
@@ -3121,7 +3164,7 @@ async function renderSectorsView(loc){
         const sec = secOfLoc.find(s=>s.id===el.dataset.sec);
         state.sectStack = [loc, sec];
         state.blockFilter = "todo";
-        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+        state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
         history.pushState({navDepth:2}, "");
         render();
       });
@@ -3460,7 +3503,7 @@ async function renderBlocksView(loc, sec){
     <button data-f="done" class="${state.blockFilter==='done'?'active':''}">${t("tab_hechos",doneBlocks.length)}</button>
   </div>`;
 
-  const hasActiveFilters = state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax;
+  const hasActiveFilters = state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax || !!state.itemPriorityFilter;
   html += `<div class="search-filter-row">
     <div class="search-bar" style="margin:0;flex:1;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="itemSearchInput" placeholder="${t("buscar_bloques_placeholder")}" value="${escapeAttr(state.itemSearchTerm)}"></div>
     <button class="icon-btn-search ${hasActiveFilters?'active':''}" id="itemFilterBtn" title="${t("filtros_titulo")}">${filterIconSVG(16)}</button>
@@ -3492,6 +3535,9 @@ async function renderBlocksView(loc, sec){
         const r = gradeRank(b.grade);
         return r!==null && r>=minR && r<=maxR;
       });
+    }
+    if(state.itemPriorityFilter){
+      l = l.filter(b=>(b.priority||null)===state.itemPriorityFilter);
     }
     if(state.itemSortMode==="best"){
       l = l.slice().sort((a,b)=>(b.rating||0)-(a.rating||0));
@@ -3543,7 +3589,8 @@ async function renderBlocksView(loc, sec){
         const wasOpen = expand.classList.contains("open");
         listArea.querySelectorAll(".block-expand.open").forEach(x=>x.classList.remove("open"));
         listArea.querySelectorAll("[data-block].expanded").forEach(x=>x.classList.remove("expanded"));
-        if(!wasOpen){ expand.classList.add("open"); el.classList.add("expanded"); }
+        if(!wasOpen){ expand.classList.add("open"); el.classList.add("expanded"); expandedItemId = el.dataset.block; }
+        else { expandedItemId = null; }
       });
     });
 
@@ -3668,7 +3715,7 @@ async function renderBlocksView(loc, sec){
   document.getElementById("itemFilterBtn").addEventListener("click",()=>{
     openItemFilterSheet(STYLE_TAGS, currentGradeList(), ()=>{
       const btn = document.getElementById("itemFilterBtn");
-      if(btn) btn.classList.toggle("active", state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax);
+      if(btn) btn.classList.toggle("active", state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax || !!state.itemPriorityFilter);
       renderListBody();
     });
   });
@@ -3710,7 +3757,8 @@ function renderBlockRow(b){
   if(isDone && b.dateDone) detailRows += `<div class="block-detail-row"><span class="block-detail-label">${t("fecha_encadene")}</span><span class="block-detail-value">${formatDoneDate(b.dateDone)}</span></div>`;
   if(b.lat!=null && b.lng!=null) detailRows += `<div class="block-detail-row"><span class="block-detail-label">📍 ${t("coordenadas_bloque_label")}</span><button class="block-detail-value" data-open-maps-lat="${b.lat}" data-open-maps-lng="${b.lng}" style="background:none;border:none;padding:0;font:inherit;color:var(--rust-600); text-decoration:none;cursor:pointer;">${t("btn_como_llegar_corto")}</button></div>`;
   const priorityCardClass = !isDone ? (priority!=="normal" ? `priority-${priority}-bg` : "priority-normal-flat") : "";
-  return `<div class="list-item ${priorityCardClass}" data-block="${b.id}">
+  const isExpanded = expandedItemId === b.id;
+  return `<div class="list-item ${priorityCardClass} ${isExpanded?"expanded":""}" data-block="${b.id}">
     <div class="card-header-wrap ${isDiscarded?"discarded-fade":""}">
       ${topCornerHtml}${priorityBadgeHtml}
       <div class="block-row">
@@ -3722,7 +3770,7 @@ function renderBlockRow(b){
         </div>
       </div>
     </div>
-    <div class="block-expand">
+    <div class="block-expand ${isExpanded?"open":""}">
       ${detailRows?`<div class="block-detail-rows">${detailRows}</div>`:""}
       ${isDone ? `` : `
         <div class="btn-row">
@@ -3750,7 +3798,7 @@ function renderBlockRow(b){
         <div class="photos-hint">${t("fotos_hint")}</div>
         <div class="block-photos">
           ${(b.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).map(p=>`<div class="photo-thumb" data-photo-view="${p.id}" data-block="${b.id}"><img src="${photoUrl(p)}" alt=""></div>`).join("")}
-          ${(b.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).length < MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" data-action="add-photo" data-block="${b.id}" for="blockPhotoInput">+</label>` : ""}
+          ${(b.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).length < MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" data-action="add-photo" data-block="${b.id}" for="blockPhotoInput">+</label>` : `<div class="photo-limit-hint">${limiteFotosTexto()}</div>`}
         </div>
       `}
       <div class="secondary-actions-row">
@@ -3887,7 +3935,7 @@ function openBlockForm(sec, existing){
           <img src="${photoUrl(p)}" alt="">
           <button type="button" class="photo-thumb-remove" data-idx="${i}">×</button>
         </div>
-      `).join("") + (formPhotos.length<MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" for="fBPhotoInput">+</label>` : "");
+      `).join("") + (formPhotos.length<MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" for="fBPhotoInput">+</label>` : `<div class="photo-limit-hint">${limiteFotosTexto()}</div>`);
       photosWrap.querySelectorAll("[data-idx]").forEach(btn=>{
         btn.addEventListener("click",()=>{
           formPhotos.splice(parseInt(btn.dataset.idx,10),1);
@@ -4193,7 +4241,7 @@ async function renderRoutesView(loc, sec){
     <button data-f="done" class="${state.blockFilter==='done'?'active':''}">${t("tab_hechos",doneRoutes.length)}</button>
   </div>`;
 
-  const hasActiveFilters = state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax;
+  const hasActiveFilters = state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax || !!state.itemPriorityFilter;
   html += `<div class="search-filter-row">
     <div class="search-bar" style="margin:0;flex:1;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="itemSearchInput" placeholder="${t("buscar_vias_placeholder")}" value="${escapeAttr(state.itemSearchTerm)}"></div>
     <button class="icon-btn-search ${hasActiveFilters?'active':''}" id="itemFilterBtn" title="${t("filtros_titulo")}">${filterIconSVG(16)}</button>
@@ -4225,6 +4273,9 @@ async function renderRoutesView(loc, sec){
         const rk = gradeRank(r.grade);
         return rk!==null && rk>=minR && rk<=maxR;
       });
+    }
+    if(state.itemPriorityFilter){
+      l = l.filter(r=>(r.priority||null)===state.itemPriorityFilter);
     }
     if(state.itemSortMode==="best"){
       l = l.slice().sort((a,b)=>(b.rating||0)-(a.rating||0));
@@ -4276,7 +4327,8 @@ async function renderRoutesView(loc, sec){
         const wasOpen = expand.classList.contains("open");
         listArea.querySelectorAll(".block-expand.open").forEach(x=>x.classList.remove("open"));
         listArea.querySelectorAll("[data-route].expanded").forEach(x=>x.classList.remove("expanded"));
-        if(!wasOpen){ expand.classList.add("open"); el.classList.add("expanded"); }
+        if(!wasOpen){ expand.classList.add("open"); el.classList.add("expanded"); expandedItemId = el.dataset.route; }
+        else { expandedItemId = null; }
       });
     });
 
@@ -4401,7 +4453,7 @@ async function renderRoutesView(loc, sec){
   document.getElementById("itemFilterBtn").addEventListener("click",()=>{
     openItemFilterSheet(ROUTE_CLIMB_STYLES, ROUTE_GRADES, ()=>{
       const btn = document.getElementById("itemFilterBtn");
-      if(btn) btn.classList.toggle("active", state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax);
+      if(btn) btn.classList.toggle("active", state.itemSortMode!=="recent" || state.itemStyleFilter.size>0 || !!state.itemGradeMin || !!state.itemGradeMax || !!state.itemPriorityFilter);
       renderListBody();
     });
   });
@@ -4445,7 +4497,8 @@ function renderRouteRow(r){
   if(isDone && r.dateDone) detailRows += `<div class="block-detail-row"><span class="block-detail-label">${t("fecha_encadene")}</span><span class="block-detail-value">${formatDoneDate(r.dateDone)}</span></div>`;
   if(r.lat!=null && r.lng!=null) detailRows += `<div class="block-detail-row"><span class="block-detail-label">📍 ${t("coordenadas_bloque_label")}</span><button class="block-detail-value" data-open-maps-lat="${r.lat}" data-open-maps-lng="${r.lng}" style="background:none;border:none;padding:0;font:inherit;color:var(--rust-600); text-decoration:none;cursor:pointer;">${t("btn_como_llegar_corto")}</button></div>`;
   const priorityCardClass = !isDone ? (priority!=="normal" ? `priority-${priority}-bg` : "priority-normal-flat") : "";
-  return `<div class="list-item ${priorityCardClass}" data-route="${r.id}">
+  const isExpanded = expandedItemId === r.id;
+  return `<div class="list-item ${priorityCardClass} ${isExpanded?"expanded":""}" data-route="${r.id}">
     <div class="card-header-wrap ${isDiscarded?"discarded-fade":""}">
       ${topCornerHtml}${priorityBadgeHtml}
       <div class="block-row">
@@ -4457,7 +4510,7 @@ function renderRouteRow(r){
         </div>
       </div>
     </div>
-    <div class="block-expand">
+    <div class="block-expand ${isExpanded?"open":""}">
       ${detailRows?`<div class="block-detail-rows">${detailRows}</div>`:""}
       ${isDone ? `` : `
         <div class="btn-row">
@@ -4485,7 +4538,7 @@ function renderRouteRow(r){
         <div class="photos-hint">${t("fotos_hint")}</div>
         <div class="block-photos">
           ${(r.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).map(p=>`<div class="photo-thumb" data-photo-view-route="${p.id}" data-route="${r.id}"><img src="${photoUrl(p)}" alt=""></div>`).join("")}
-          ${(r.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).length < MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" data-action="add-photo-route" data-route="${r.id}" for="routePhotoInput">+</label>` : ""}
+          ${(r.photos||[]).filter(p=>p&&(p.blob||p.dataUrl)).length < MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" data-action="add-photo-route" data-route="${r.id}" for="routePhotoInput">+</label>` : `<div class="photo-limit-hint">${limiteFotosTexto()}</div>`}
         </div>
       `}
       <div class="secondary-actions-row">
@@ -4625,7 +4678,7 @@ function openRouteForm(sec, existing){
           <img src="${photoUrl(p)}" alt="">
           <button type="button" class="photo-thumb-remove" data-idx="${i}">×</button>
         </div>
-      `).join("") + (formPhotos.length<MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" for="rPhotoInput">+</label>` : "");
+      `).join("") + (formPhotos.length<MAX_PHOTOS_PER_ITEM ? `<label class="photo-add-btn" for="rPhotoInput">+</label>` : `<div class="photo-limit-hint">${limiteFotosTexto()}</div>`);
       photosWrap.querySelectorAll("[data-idx]").forEach(btn=>{
         btn.addEventListener("click",()=>{
           formPhotos.splice(parseInt(btn.dataset.idx,10),1);
@@ -5011,6 +5064,7 @@ document.getElementById("photoLightboxDelete").addEventListener("click", ()=>{
 });
 
 const MAX_PHOTOS_PER_ITEM = 6;
+function limiteFotosTexto(){ return t("limite_fotos_alcanzado", MAX_PHOTOS_PER_ITEM); }
 let pendingPhotoBlockId = null;
 document.getElementById("blockPhotoInput").addEventListener("change", async (e)=>{
   const files = Array.from(e.target.files||[]);
@@ -5087,6 +5141,7 @@ async function openPdfOverlay(url, filename){
   document.body.appendChild(overlay);
   overlay.querySelector("#pdfOverlayClose").addEventListener("click", closePdfOverlay);
   document.body.style.overflow = "hidden";
+  setViewportZoomEnabled(true);
   pdfOverlaySeq++;
   const myPdfSeq = pdfOverlaySeq;
   if(history.state && history.state.pdfOverlay){
@@ -5159,6 +5214,7 @@ function closePdfOverlayInternal(){
   const overlay = document.getElementById("pdfOverlay");
   if(overlay) overlay.remove();
   document.body.style.overflow = "";
+  setViewportZoomEnabled(false);
   if(currentPdfUrl){ URL.revokeObjectURL(currentPdfUrl); currentPdfUrl = null; }
 }
 function openGuideViewer(record, storeName){
@@ -5854,7 +5910,7 @@ function openTimerPresetForm(existing){
     <label class="field-label">${t("nombre_entreno_predet")}</label>
     <input type="text" id="tpName" maxlength="60" placeholder="${t("ph_entreno_predet")}" value="${existing?escapeAttr(existing.name):""}">
     <div id="tpStagesContainer">${stagesHtml}</div>
-    <div class="btn-row"><button type="button" class="btn btn-ghost" id="tpAddStage" style="width:100%;">${t("anadir_etapa")}</button></div>
+    <div class="btn-row" ${initialStages.length>=10?'style="display:none;"':''}><button type="button" class="btn btn-ghost" id="tpAddStage" style="width:100%;">${t("anadir_etapa")}</button></div>
     <div class="btn-row">
       <button class="btn btn-primary" id="tpSave">${t("btn_guardar")}</button>
       <button class="btn btn-ghost" id="tpCancel">${t("btn_cancelar")}</button>
@@ -5877,9 +5933,15 @@ function openTimerPresetForm(existing){
 
     root.querySelector("#tpAddStage").onclick = ()=>{
       const stageCount = container.querySelectorAll(".tp-stage").length;
+      if(stageCount>=10){
+        toast(t("toast_limite_etapas"));
+        return;
+      }
       container.insertAdjacentHTML("beforeend", timerPresetStageRestHTML(stageCount-1, 5));
       container.insertAdjacentHTML("beforeend", timerPresetStageHTML(stageCount, null));
       wireRemoveButtons();
+      const addStageBtn = root.querySelector("#tpAddStage");
+      if(container.querySelectorAll(".tp-stage").length>=10) addStageBtn.style.display = "none";
     };
 
     root.querySelector("#tpSave").onclick = async ()=>{
@@ -6603,6 +6665,7 @@ async function computeCurrentLevel(){
   return computeLevel(totalPoints);
 }
 let cachedLevelIndex = 1;
+let expandedItemId = null;
 let editingCommentIds = new Set();
 function paintLevelBadge(){
   const badge = document.getElementById("heroLevelBadge");
@@ -7764,7 +7827,7 @@ document.querySelectorAll(".bottom-nav button").forEach(btn=>{
       state.sectStack = [];
       state.sectorSearchOpen = false;
       state.sectorSearchTerm = "";
-      state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+      state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
     }
     render();
   });
@@ -7781,11 +7844,19 @@ window.addEventListener("popstate",(e)=>{
     const targetDepth = (e.state && typeof e.state.navDepth==="number") ? e.state.navDepth : 0;
     if(targetDepth < state.sectStack.length){
       state.sectStack.length = targetDepth;
-      state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null;
+      state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
       state.sectorSearchOpen = false;
       state.sectorSearchTerm = "";
       render();
     }
+  }
+  // Nunca dejamos que el "atrás" salga de nuestro propio historial hasta la carga
+  // original de la página — eso es lo que hacía que, en la app nativa, reapareciera
+  // la pantalla de carga (como si se hubiera recargado). En vez de eso, si llegamos
+  // a un estado "vacío" (sin navDepth/sheet/pdf), volvemos a anclar el historial aquí,
+  // así el siguiente "atrás" simplemente no hace nada, en vez de recargar la app.
+  if(!(e.state && (e.state.navDepth || e.state.sheetOpen || e.state.pdfOverlay))){
+    history.pushState({root:true}, "");
   }
 });
 
@@ -8005,6 +8076,7 @@ function openOnboarding(){
 }
 
 async function bootApp(){
+  history.replaceState({root:true}, "");
   const bootStart = Date.now();
   await loadSettings();
   const name = await getProfile();
