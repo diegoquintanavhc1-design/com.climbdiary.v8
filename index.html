@@ -3098,14 +3098,7 @@ async function renderSectorsView(loc){
   const itemStore = state.climbMode==="route" ? "routes" : "blocks";
   const [sectors, items] = await Promise.all([dbGetAll("sectors"), dbGetAll(itemStore)]);
   const secOfLoc = sectors.filter(s=>s.locationId===loc.id && (s.climbType||"boulder")===state.climbMode);
-  const secActivity = {};
-  for(const sec of secOfLoc) secActivity[sec.id] = sec.createdAt||0;
-  for(const it of items){
-    if(secActivity[it.sectorId]!==undefined){
-      secActivity[it.sectorId] = Math.max(secActivity[it.sectorId], it.createdAt||0);
-    }
-  }
-  secOfLoc.sort((a,b)=>(secActivity[b.id]||0)-(secActivity[a.id]||0));
+  secOfLoc.sort((a,b)=>(a.name||"").localeCompare((b.name||""), undefined, {sensitivity:"base"}));
 
   let html = `<div class="section-title">${t("sectores_en",escapeHtml(loc.name))}</div>`;
   html += `<div class="search-bar" style="margin:8px 4px 14px;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="secSearchInput" placeholder="${t("buscar_sector_placeholder")}" value="${escapeAttr(state.sectorSearchTerm)}"></div>`;
