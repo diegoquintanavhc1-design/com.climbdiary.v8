@@ -1116,9 +1116,9 @@ const state = {
   itemGradeMin: null, itemGradeMax: null, // rango de grado (strings) dentro de un sector
   itemPriorityFilter: null, // 'super' | 'radar' | 'discarded' | null
   perfilBlockSearch: "", perfilBlockSort: "best", // historial de bloques hechos en Perfil
-  perfilBlockStyleFilter: new Set(), perfilBlockRockFilter: new Set(), perfilBlockPriorityFilter: null,
+  perfilBlockStyleFilter: new Set(), perfilBlockRockFilter: new Set(),
   perfilRouteSearch: "", perfilRouteSort: "best", // historial de vías hechas en Perfil
-  perfilRouteStyleFilter: new Set(), perfilRouteRockFilter: new Set(), perfilRoutePriorityFilter: null,
+  perfilRouteStyleFilter: new Set(), perfilRouteRockFilter: new Set(),
 };
 
 const ACCENT_PALETTE = ["#55684A","#A8461F","#3E5B68","#B8801F","#6B4A73","#2F7A6B"];
@@ -7175,9 +7175,6 @@ async function renderPerfil(){
     if(rockFilter && rockFilter.size>0){
       list = list.filter(b=>b.rockType && rockFilter.has(b.rockType));
     }
-    if(priorityFilter){
-      list = list.filter(b=>(b.priority||null)===priorityFilter);
-    }
     if(sortMode==="best"){
       list.sort((a,b)=>(b.rating||0)-(a.rating||0));
     } else if(sortMode==="worst"){
@@ -7209,22 +7206,22 @@ async function renderPerfil(){
     }
     return h;
   }
-  function perfilFilterActive(sortKey, styleKey, rockKey, priorityKey){
-    return state[sortKey]!=="best" || state[styleKey].size>0 || state[rockKey].size>0 || !!state[priorityKey];
+  function perfilFilterActive(sortKey, styleKey, rockKey){
+    return state[sortKey]!=="best" || state[styleKey].size>0 || state[rockKey].size>0;
   }
   html += `<div class="section-title">${t("sec_todos_bloques")}</div>`;
   html += `<div class="search-filter-row">
     <div class="search-bar" style="flex:1;margin:0;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="perfilBlockSearchInput" placeholder="${t("buscar_bloques_placeholder")}" value="${escapeAttr(state.perfilBlockSearch)}"></div>
-    <button class="icon-btn-search ${perfilFilterActive("perfilBlockSort","perfilBlockStyleFilter","perfilBlockRockFilter","perfilBlockPriorityFilter")?"active":""}" id="perfilBlockFilterBtn" title="${t("filtros_titulo")}">${filterIconSVG(15)}</button>
+    <button class="icon-btn-search ${perfilFilterActive("perfilBlockSort","perfilBlockStyleFilter","perfilBlockRockFilter")?"active":""}" id="perfilBlockFilterBtn" title="${t("filtros_titulo")}">${filterIconSVG(15)}</button>
   </div>`;
-  html += `<div id="perfilBlocksArea">${itemsList(doneBlocks, "🏆", true, state.perfilBlockSearch, state.perfilBlockSort, state.perfilBlockStyleFilter, state.perfilBlockRockFilter, state.perfilBlockPriorityFilter)}</div>`;
+  html += `<div id="perfilBlocksArea">${itemsList(doneBlocks, "🏆", true, state.perfilBlockSearch, state.perfilBlockSort, state.perfilBlockStyleFilter, state.perfilBlockRockFilter)}</div>`;
 
   html += `<div class="section-title">${t("sec_todas_vias")}</div>`;
   html += `<div class="search-filter-row">
     <div class="search-bar" style="flex:1;margin:0;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="perfilRouteSearchInput" placeholder="${t("buscar_vias_placeholder")}" value="${escapeAttr(state.perfilRouteSearch)}"></div>
-    <button class="icon-btn-search ${perfilFilterActive("perfilRouteSort","perfilRouteStyleFilter","perfilRouteRockFilter","perfilRoutePriorityFilter")?"active":""}" id="perfilRouteFilterBtn" title="${t("filtros_titulo")}">${filterIconSVG(15)}</button>
+    <button class="icon-btn-search ${perfilFilterActive("perfilRouteSort","perfilRouteStyleFilter","perfilRouteRockFilter")?"active":""}" id="perfilRouteFilterBtn" title="${t("filtros_titulo")}">${filterIconSVG(15)}</button>
   </div>`;
-  html += `<div id="perfilRoutesArea">${itemsList(doneRoutes, "🏆", false, state.perfilRouteSearch, state.perfilRouteSort, state.perfilRouteStyleFilter, state.perfilRouteRockFilter, state.perfilRoutePriorityFilter)}</div>`;
+  html += `<div id="perfilRoutesArea">${itemsList(doneRoutes, "🏆", false, state.perfilRouteSearch, state.perfilRouteSort, state.perfilRouteStyleFilter, state.perfilRouteRockFilter)}</div>`;
 
   mainArea.innerHTML = html;
 
@@ -7262,10 +7259,10 @@ async function renderPerfil(){
   const perfilBlocksArea = document.getElementById("perfilBlocksArea");
   const perfilRoutesArea = document.getElementById("perfilRoutesArea");
   function renderPerfilBlocksBody(){
-    perfilBlocksArea.innerHTML = itemsList(doneBlocks, "🏆", true, state.perfilBlockSearch, state.perfilBlockSort, state.perfilBlockStyleFilter, state.perfilBlockRockFilter, state.perfilBlockPriorityFilter);
+    perfilBlocksArea.innerHTML = itemsList(doneBlocks, "🏆", true, state.perfilBlockSearch, state.perfilBlockSort, state.perfilBlockStyleFilter, state.perfilBlockRockFilter);
   }
   function renderPerfilRoutesBody(){
-    perfilRoutesArea.innerHTML = itemsList(doneRoutes, "🏆", false, state.perfilRouteSearch, state.perfilRouteSort, state.perfilRouteStyleFilter, state.perfilRouteRockFilter, state.perfilRoutePriorityFilter);
+    perfilRoutesArea.innerHTML = itemsList(doneRoutes, "🏆", false, state.perfilRouteSearch, state.perfilRouteSort, state.perfilRouteStyleFilter, state.perfilRouteRockFilter);
   }
   document.getElementById("perfilBlockSearchInput").addEventListener("input",(e)=>{
     state.perfilBlockSearch = e.target.value;
@@ -7280,28 +7277,18 @@ async function renderPerfil(){
     const sortKey = isBoulder ? "perfilBlockSort" : "perfilRouteSort";
     const styleKey = isBoulder ? "perfilBlockStyleFilter" : "perfilRouteStyleFilter";
     const rockKey = isBoulder ? "perfilBlockRockFilter" : "perfilRouteRockFilter";
-    const priorityKey = isBoulder ? "perfilBlockPriorityFilter" : "perfilRoutePriorityFilter";
     const btnId = isBoulder ? "perfilBlockFilterBtn" : "perfilRouteFilterBtn";
     const sortOptions = [
       {key:"best", label:t("orden_best")},
       {key:"worst", label:t("orden_worst")},
       {key:"recent", label:t("orden_recientes")},
     ];
-    const priorityOptions = [
-      {key:"super", label:"⭐ "+t("super_proyecto_on")},
-      {key:"radar", label:t("radar_badge")},
-      {key:"discarded", label:"🗑️ "+t("btn_abandono")},
-    ];
-    const hasActiveFilters = perfilFilterActive(sortKey, styleKey, rockKey, priorityKey);
+    const hasActiveFilters = perfilFilterActive(sortKey, styleKey, rockKey);
     openSheet(`
       <h2>${t("filtros_titulo")}</h2>
       <label class="field-label">${t("ordenar_por")}</label>
       <div class="chip-grid" id="perfilSortChips">
         ${sortOptions.map(o=>`<div class="chip-choice ${state[sortKey]===o.key?'selected':''}" data-sort="${o.key}">${o.label}</div>`).join("")}
-      </div>
-      <label class="field-label">${t("filtrar_por_estado")}</label>
-      <div class="chip-grid" id="perfilPriorityChips">
-        ${priorityOptions.map(o=>`<div class="chip-choice ${state[priorityKey]===o.key?'selected':''}" data-priority="${o.key}">${o.label}</div>`).join("")}
       </div>
       <label class="field-label">${t("filtrar_por_estilo")}</label>
       <div class="chip-grid" id="perfilStyleChips">
@@ -7317,21 +7304,8 @@ async function renderPerfil(){
       </div>
     `,(root)=>{
       let sortMode = state[sortKey];
-      let priorityMode = state[priorityKey];
       const styleSet = new Set(state[styleKey]);
       const rockSet = new Set(state[rockKey]);
-      root.querySelectorAll("[data-priority]").forEach(el=>{
-        el.addEventListener("click",()=>{
-          if(priorityMode === el.dataset.priority){
-            priorityMode = null;
-            el.classList.remove("selected");
-          } else {
-            priorityMode = el.dataset.priority;
-            root.querySelectorAll("[data-priority]").forEach(x=>x.classList.remove("selected"));
-            el.classList.add("selected");
-          }
-        });
-      });
       root.querySelectorAll("[data-sort]").forEach(el=>{
         el.addEventListener("click",()=>{
           sortMode = el.dataset.sort;
@@ -7357,10 +7331,9 @@ async function renderPerfil(){
         state[sortKey] = sortMode;
         state[styleKey] = styleSet;
         state[rockKey] = rockSet;
-        state[priorityKey] = priorityMode;
         closeSheet();
         const btn = document.getElementById(btnId);
-        if(btn) btn.classList.toggle("active", perfilFilterActive(sortKey, styleKey, rockKey, priorityKey));
+        if(btn) btn.classList.toggle("active", perfilFilterActive(sortKey, styleKey, rockKey));
         if(isBoulder) renderPerfilBlocksBody(); else renderPerfilRoutesBody();
       };
       const clearBtn = root.querySelector("#perfilFilterClear");
@@ -7369,7 +7342,6 @@ async function renderPerfil(){
           state[sortKey] = "best";
           state[styleKey] = new Set();
           state[rockKey] = new Set();
-          state[priorityKey] = null;
           closeSheet();
           const btn = document.getElementById(btnId);
           if(btn) btn.classList.remove("active");
@@ -7907,29 +7879,24 @@ window.addEventListener("popstate",(e)=>{
   if(e.state && (e.state.sheetOpen || e.state.pdfOverlay)) return;
   if(backBtnSyncing){
     backBtnSyncing = false;
-    if(!(e.state && (e.state.navDepth || e.state.sheetOpen || e.state.pdfOverlay))){
-      history.pushState({root:true}, "");
-    }
+    history.pushState({root:true}, "");
     return;
   }
   if(state.tab==="sectores" && state.sectStack.length>0){
-    const targetDepth = (e.state && typeof e.state.navDepth==="number") ? e.state.navDepth : 0;
-    if(targetDepth < state.sectStack.length){
-      state.sectStack.length = targetDepth;
-      state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
-      state.sectorSearchOpen = false;
-      state.sectorSearchTerm = "";
-      render();
-    }
+    state.sectStack.pop();
+    state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
+    state.sectorSearchOpen = false;
+    state.sectorSearchTerm = "";
+    render();
   }
   // Nunca dejamos que el "atrás" salga de nuestro propio historial hasta la carga
   // original de la página — eso es lo que hacía que, en la app nativa, reapareciera
-  // la pantalla de carga (como si se hubiera recargado). En vez de eso, si llegamos
-  // a un estado "vacío" (sin navDepth/sheet/pdf), volvemos a anclar el historial aquí,
-  // así el siguiente "atrás" simplemente no hace nada, en vez de recargar la app.
-  if(!(e.state && (e.state.navDepth || e.state.sheetOpen || e.state.pdfOverlay))){
-    history.pushState({root:true}, "");
-  }
+  // la pantalla de carga (como si se hubiera recargado). Cada vez que llega un "atrás"
+  // volvemos a anclar el historial aquí mismo, así el siguiente "atrás" simplemente
+  // retrocede un nivel más (o no hace nada si ya estamos arriba del todo), en vez de
+  // salir de la app o recargarla. No dependemos de que el navegador nos devuelva
+  // el "navDepth" exacto — simplemente bajamos un nivel cada vez, que es más fiable.
+  history.pushState({root:true}, "");
 });
 
 /* Service worker registration (only works when served over http/https) */
