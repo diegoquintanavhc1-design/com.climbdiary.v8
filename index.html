@@ -2461,6 +2461,7 @@ function toast(msg){
 /* ---------------------------------------------------------- */
 const sheetBackdrop = document.getElementById("sheetBackdrop");
 const sheetContent = document.getElementById("sheetContent");
+let internalHistoryPop = false;
 let bodyScrollLockY = 0;
 let bodyIsLocked = false;
 let sheetSeq = 0;
@@ -2505,6 +2506,7 @@ function closeSheet(){
   if(closingSeq!==null){
     Promise.resolve().then(()=>{
       if(history.state && history.state.sheetOpen && history.state.seq===closingSeq){
+        internalHistoryPop = true;
         history.back();
       }
     });
@@ -5197,6 +5199,7 @@ function closePdfOverlay(){
   if(closingSeq!==null){
     Promise.resolve().then(()=>{
       if(history.state && history.state.pdfOverlay && history.state.seq===closingSeq){
+        internalHistoryPop = true;
         history.back();
       }
     });
@@ -7877,6 +7880,10 @@ backBtn.addEventListener("click",()=>{
 });
 window.addEventListener("popstate",(e)=>{
   if(e.state && (e.state.sheetOpen || e.state.pdfOverlay)) return;
+  if(internalHistoryPop){
+    internalHistoryPop = false;
+    return;
+  }
   if(backBtnSyncing){
     backBtnSyncing = false;
     history.pushState({root:true}, "");
