@@ -7866,14 +7866,17 @@ document.querySelectorAll(".bottom-nav button").forEach(btn=>{
   });
 });
 
+function popOneSectLevel(){
+  state.sectStack.pop();
+  state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
+  state.sectorSearchOpen = false;
+  state.sectorSearchTerm = "";
+}
 let backBtnSyncing = false;
 backBtn.addEventListener("click",()=>{
   if(state.tab==="sectores" && state.sectStack.length>0){
     backBtnSyncing = true;
-    state.sectStack.pop();
-    state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
-    state.sectorSearchOpen = false;
-    state.sectorSearchTerm = "";
+    popOneSectLevel();
     render();
     history.back();
   }
@@ -7886,24 +7889,22 @@ window.addEventListener("popstate",(e)=>{
   }
   if(backBtnSyncing){
     backBtnSyncing = false;
-    history.pushState({root:true}, "");
+    if(state.sectStack.length===0) history.pushState({root:true}, "");
     return;
   }
   if(state.tab==="sectores" && state.sectStack.length>0){
-    state.sectStack.pop();
-    state.itemSearchTerm = ""; state.itemSortMode = "recent"; state.itemStyleFilter = new Set(); state.itemGradeMin = null; state.itemGradeMax = null; state.itemPriorityFilter = null;
-    state.sectorSearchOpen = false;
-    state.sectorSearchTerm = "";
+    popOneSectLevel();
     render();
   }
-  // Nunca dejamos que el "atrás" salga de nuestro propio historial hasta la carga
-  // original de la página — eso es lo que hacía que, en la app nativa, reapareciera
-  // la pantalla de carga (como si se hubiera recargado). Cada vez que llega un "atrás"
-  // volvemos a anclar el historial aquí mismo, así el siguiente "atrás" simplemente
-  // retrocede un nivel más (o no hace nada si ya estamos arriba del todo), en vez de
-  // salir de la app o recargarla. No dependemos de que el navegador nos devuelva
-  // el "navDepth" exacto — simplemente bajamos un nivel cada vez, que es más fiable.
-  history.pushState({root:true}, "");
+  // Solo volvemos a anclar el historial cuando ya NO queda ningún nivel más por
+  // recorrer (sectStack vacío) — así el siguiente "atrás" no sale de la app ni la
+  // recarga, se queda anclado aquí. Si aún quedan niveles por recorrer, NO tocamos
+  // el historial: las entradas ya empujadas al entrar en cada zona/sector son
+  // suficientes, y añadir una entrada extra aquí era justo lo que rompía la
+  // secuencia (sectores → zonas) en el paso siguiente.
+  if(state.sectStack.length===0){
+    history.pushState({root:true}, "");
+  }
 });
 
 /* Service worker registration (only works when served over http/https) */
