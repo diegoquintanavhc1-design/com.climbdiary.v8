@@ -1014,6 +1014,7 @@
 <input type="file" id="sectorGuideInput" accept="application/pdf,.pdf" style="display:none;">
 <input type="file" id="trainingPdfInput" accept="application/pdf,.pdf" style="display:none;">
 <input type="file" id="backupFileInput" accept="application/json,.json" style="display:none;">
+<input type="file" id="csvFileInput" accept="text/csv,.csv" style="display:none;">
 <input type="file" id="blockPhotoInput" accept="image/*" multiple style="display:none;">
 <input type="file" id="routePhotoInput" accept="image/*" multiple style="display:none;">
 
@@ -1873,6 +1874,15 @@ const I18N = {
     privacidad_perfil:"Privacidad del perfil", publico:"Público", solo_amigos:"Solo amigos", privado:"Privado",
     privacidad_hint:"Ahora mismo la app es 100% local — esto queda listo para cuando lleguen las funciones sociales.",
     guardar_ajustes:"Guardar ajustes", copia_seguridad:"Copia de seguridad",
+    importar_csv_label:"Importar bloques desde CSV",
+    importar_csv_hint:"Sube un archivo CSV (exportado desde Excel/Google Sheets) para añadir de golpe bloques ya encadenados. Columnas necesarias: Nombre, Grado, Sector, Zona. Opcionales: Estilo, Nota, Fecha.",
+    importar_csv_btn:"📄 Importar CSV", ver_ejemplo_csv:"Ver formato de ejemplo",
+    csv_ejemplo_texto:"La primera fila debe llevar los nombres de columna. Ejemplo:\n\nNombre,Grado,Sector,Zona,Estilo\nEl Toro,7A,Canto Cochino,La Pedriza,Flash\nLa Sirena,6C+,Canto Cochino,La Pedriza,\nDragón,8A,Sector Norte,Albarracín,Flash\n\nLas columnas Estilo, Nota y Fecha son opcionales. Si la zona o el sector no existen todavía en tu diario, se crean automáticamente.",
+    csv_error_titulo:"No se pudo importar", csv_sin_filas:"El archivo está vacío o no tiene el formato correcto.",
+    csv_error_generico:"Hubo un problema leyendo el archivo. Revisa que sea un CSV válido.",
+    csv_columnas_faltan:"Faltan columnas obligatorias. Necesitas al menos: Nombre, Grado, Sector y Zona.",
+    csv_confirm_importar:(n)=>`Se van a importar ${n} bloques como encadenados. Las zonas y sectores que no existan se crearán automáticamente. ¿Continuar?`,
+    csv_import_resultado:(b,z,s)=>`✅ ${b} bloques importados (${z} zonas y ${s} sectores nuevos creados)`,
     hacer_copia:"⬇ Hacer copia de seguridad", exportar_json:"⬇ Exportar copia completa (.json)", exportar_csv:"⬇ Exportar bloques (.csv)", importar_json:"⬆ Importar copia (.json)",
     guias_pdf_label:"Guías PDF", guias_ocupan:(n,size)=>`${n} · ${size} ocupados en el dispositivo`,
     gestionar_liberar:"🗑 Gestionar y liberar espacio", toast_ajustes_guardados:"Ajustes guardados",
@@ -2246,6 +2256,15 @@ const I18N = {
     privacidad_perfil:"Profile privacy", publico:"Public", solo_amigos:"Friends only", privado:"Private",
     privacidad_hint:"The app is fully local right now — this is ready for when social features arrive.",
     guardar_ajustes:"Save settings", copia_seguridad:"Backup",
+    importar_csv_label:"Import boulders from CSV",
+    importar_csv_hint:"Upload a CSV file (exported from Excel/Google Sheets) to add already-sent boulders in bulk. Required columns: Name, Grade, Sector, Area. Optional: Style, Note, Date.",
+    importar_csv_btn:"📄 Import CSV", ver_ejemplo_csv:"See example format",
+    csv_ejemplo_texto:"The first row must have the column names. Example:\n\nName,Grade,Sector,Area,Style\nEl Toro,7A,Canto Cochino,La Pedriza,Flash\nLa Sirena,6C+,Canto Cochino,La Pedriza,\nDragon,8A,North Sector,Albarracin,Flash\n\nThe Style, Note and Date columns are optional. If the area or sector don't exist yet in your diary, they'll be created automatically.",
+    csv_error_titulo:"Couldn't import", csv_sin_filas:"The file is empty or has the wrong format.",
+    csv_error_generico:"There was a problem reading the file. Check that it's a valid CSV.",
+    csv_columnas_faltan:"Required columns are missing. You need at least: Name, Grade, Sector and Area.",
+    csv_confirm_importar:(n)=>`${n} boulders will be imported as sent. Areas and sectors that don't exist yet will be created automatically. Continue?`,
+    csv_import_resultado:(b,z,s)=>`✅ ${b} boulders imported (${z} new areas and ${s} new sectors created)`,
     hacer_copia:"⬇ Make a backup", exportar_json:"⬇ Export full backup (.json)", exportar_csv:"⬇ Export boulders (.csv)", importar_json:"⬆ Import backup (.json)",
     guias_pdf_label:"Guidebooks", guias_ocupan:(n,size)=>`${n} · ${size} used on this device`,
     gestionar_liberar:"🗑 Manage & free up space", toast_ajustes_guardados:"Settings saved",
@@ -7504,6 +7523,13 @@ async function openSettingsSheet(){
       <label class="btn btn-ghost" for="backupFileInput" style="width:100%; display:flex; align-items:center; justify-content:center; text-align:center;">${t("importar_json")}</label>
     </div>
 
+    <label class="field-label" style="margin-top:22px;">${t("importar_csv_label")}</label>
+    <div class="sheet-sub" style="margin:0 0 8px;">${t("importar_csv_hint")}</div>
+    <div class="btn-row" style="flex-direction:column;">
+      <label class="btn btn-ghost" for="csvFileInput" style="width:100%; display:flex; align-items:center; justify-content:center; text-align:center;">${t("importar_csv_btn")}</label>
+      <button class="btn btn-ghost" id="setCsvExample" style="width:100%;">${t("ver_ejemplo_csv")}</button>
+    </div>
+
     <label class="field-label" style="margin-top:22px;">${t("guias_pdf_label")}</label>
     <div class="sheet-sub" style="margin:0 0 8px;">${t("guias_ocupan", t("guias_guardadas",pdfs.length), formatBytes(totalPdfBytes))}</div>
     <div class="btn-row" style="flex-direction:column;">
@@ -7558,6 +7584,9 @@ async function openSettingsSheet(){
     };
     root.querySelector("#setViewTutorial").onclick = ()=>{
       openTutorial(0);
+    };
+    root.querySelector("#setCsvExample").onclick = ()=>{
+      openAlertSheet(t("ver_ejemplo_csv"), t("csv_ejemplo_texto"));
     };
     root.querySelector("#setDeleteAllPhotos").onclick = ()=>{
       openConfirmSheet(t("confirm_borrar_fotos_titulo"), t("confirm_borrar_fotos_msg"), t("btn_eliminar"), async ()=>{
@@ -7753,6 +7782,127 @@ document.getElementById("backupFileInput").addEventListener("change",(e)=>{
     }catch(err){
       openAlertSheet(t("copia_no_valida_titulo"), t("alert_copia_invalida"));
     }
+    });
+  };
+  reader.readAsText(file);
+});
+
+function parseCSV(text){
+  const clean = text.replace(/^\uFEFF/, "").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  const lines = clean.split("\n").filter(l=>l.trim().length>0);
+  if(lines.length<2) return [];
+  const commas = (lines[0].match(/,/g)||[]).length;
+  const semis = (lines[0].match(/;/g)||[]).length;
+  const delim = semis>commas ? ";" : ",";
+  function parseLine(line){
+    const result = [];
+    let cur = "";
+    let inQuotes = false;
+    for(let i=0;i<line.length;i++){
+      const ch = line[i];
+      if(inQuotes){
+        if(ch==='"'){
+          if(line[i+1]==='"'){ cur+='"'; i++; }
+          else { inQuotes = false; }
+        } else { cur += ch; }
+      } else {
+        if(ch==='"'){ inQuotes = true; }
+        else if(ch===delim){ result.push(cur); cur=""; }
+        else { cur += ch; }
+      }
+    }
+    result.push(cur);
+    return result.map(s=>s.trim());
+  }
+  const headers = parseLine(lines[0]).map(h=>h.toLowerCase().trim());
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const cells = parseLine(lines[i]);
+    const row = {};
+    headers.forEach((h,idx)=>{ row[h] = cells[idx]!==undefined ? cells[idx] : ""; });
+    rows.push(row);
+  }
+  return rows;
+}
+document.getElementById("csvFileInput").addEventListener("change",(e)=>{
+  const file = e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let rows;
+    try{
+      rows = parseCSV(reader.result);
+    }catch(err){
+      openAlertSheet(t("csv_error_titulo"), t("csv_error_generico"));
+      return;
+    }
+    if(rows.length===0){
+      openAlertSheet(t("csv_error_titulo"), t("csv_sin_filas"));
+      return;
+    }
+    const headers = Object.keys(rows[0]);
+    const findCol = (candidates)=>headers.find(h=>candidates.includes(h));
+    const nameCol = findCol(["nombre","bloque","nombre del bloque","name"]);
+    const gradeCol = findCol(["grado","grade"]);
+    const sectorCol = findCol(["sector"]);
+    const zoneCol = findCol(["zona","zone","area"]);
+    const styleCol = findCol(["estilo","style","attempts"]);
+    const noteCol = findCol(["nota","comentario","notes","note"]);
+    const dateCol = findCol(["fecha","date"]);
+
+    if(!nameCol || !gradeCol || !sectorCol || !zoneCol){
+      openAlertSheet(t("csv_error_titulo"), t("csv_columnas_faltan"));
+      return;
+    }
+
+    openConfirmSheet(t("importar_csv_btn"), t("csv_confirm_importar",rows.length), t("importar_csv_btn"), async ()=>{
+      const allLocations = await dbGetAll("locations");
+      const allSectors = await dbGetAll("sectors");
+      let zonesCreated = 0, sectorsCreated = 0, blocksCreated = 0, skipped = 0;
+
+      for(const row of rows){
+        const name = (row[nameCol]||"").trim();
+        const grade = (row[gradeCol]||"").trim();
+        const sectorName = (row[sectorCol]||"").trim();
+        const zoneName = (row[zoneCol]||"").trim();
+        if(!name || !zoneName || !sectorName){ skipped++; continue; }
+
+        let loc = allLocations.find(l=>(l.name||"").toLowerCase()===zoneName.toLowerCase() && (l.climbType||"boulder")==="boulder");
+        if(!loc){
+          loc = {id:uid(), name:zoneName, order:allLocations.length, createdAt:Date.now(), climbType:"boulder"};
+          await dbPut("locations", loc);
+          allLocations.push(loc);
+          zonesCreated++;
+        }
+        let sec = allSectors.find(s=>s.locationId===loc.id && (s.name||"").toLowerCase()===sectorName.toLowerCase());
+        if(!sec){
+          sec = {id:uid(), locationId:loc.id, name:sectorName, order:allSectors.filter(s=>s.locationId===loc.id).length, createdAt:Date.now(), climbType:"boulder"};
+          await dbPut("sectors", sec);
+          allSectors.push(sec);
+          sectorsCreated++;
+        }
+
+        const styleRaw = styleCol ? (row[styleCol]||"").trim().toLowerCase() : "";
+        const attempts = styleRaw.includes("flash") ? "flash" : undefined;
+        let dateDone = Date.now();
+        if(dateCol && row[dateCol]){
+          const parsed = Date.parse(row[dateCol]);
+          if(!isNaN(parsed)) dateDone = parsed;
+        }
+
+        const block = {
+          id: uid(), sectorId: sec.id, name, grade, status:"done",
+          comment: noteCol ? (row[noteCol]||"").trim() : "",
+          photos: [], attempts, dateDone,
+          createdAt: Date.now()
+        };
+        await dbPut("blocks", block);
+        blocksCreated++;
+      }
+
+      toast(t("csv_import_resultado", blocksCreated, zonesCreated, sectorsCreated));
+      render();
     });
   };
   reader.readAsText(file);
