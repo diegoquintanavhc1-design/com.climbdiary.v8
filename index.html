@@ -2566,7 +2566,7 @@ function closeSheetInternal(){
   sheetContent.innerHTML = "";
   unlockBodyScroll();
   if(activeOrientationHandler){
-    window.removeEventListener("deviceorientation", activeOrientationHandler);
+    window.removeEventListener("devicemotion", activeOrientationHandler);
     activeOrientationHandler = null;
   }
 }
@@ -5339,26 +5339,33 @@ function openBubbleLevel(){
       if(angleEl) angleEl.textContent = `${angle}°`;
       if(visualEl) visualEl.style.transform = `rotate(${angle}deg)`;
     }
+    let smoothed = null;
     function startListening(){
       activeOrientationHandler = (e)=>{
-        if(e.beta!==null && e.beta!==undefined){
-          currentRaw = e.beta;
-          updateDisplay();
-        }
+        const g = e.accelerationIncludingGravity;
+        if(!g || g.y==null || g.z==null) return;
+        // Ángulo real medido con la gravedad (igual que un nivel/clinómetro de verdad),
+        // en vez del sensor de orientación (que depende de la brújula y es menos fiable).
+        // Con el móvil totalmente plano contra una pared vertical, este valor da ~0.
+        let raw = Math.atan2(g.z, -g.y) * (180/Math.PI);
+        // Pequeño suavizado para que el número no salte a cada instante.
+        smoothed = (smoothed===null) ? raw : (smoothed*0.8 + raw*0.2);
+        currentRaw = smoothed;
+        updateDisplay();
       };
-      window.addEventListener("deviceorientation", activeOrientationHandler);
+      window.addEventListener("devicemotion", activeOrientationHandler);
     }
     async function init(){
       const statusEl = document.getElementById("bubbleStatusText");
-      if(typeof DeviceOrientationEvent!=="undefined" && typeof DeviceOrientationEvent.requestPermission==="function"){
+      if(typeof DeviceMotionEvent!=="undefined" && typeof DeviceMotionEvent.requestPermission==="function"){
         try{
-          const perm = await DeviceOrientationEvent.requestPermission();
+          const perm = await DeviceMotionEvent.requestPermission();
           if(perm==="granted"){ startListening(); }
           else if(statusEl){ statusEl.textContent = t("nivel_burbuja_sin_permiso"); }
         }catch(err){
           if(statusEl) statusEl.textContent = t("nivel_burbuja_sin_permiso");
         }
-      } else if(typeof DeviceOrientationEvent!=="undefined"){
+      } else if(typeof DeviceMotionEvent!=="undefined"){
         startListening();
       } else if(statusEl){
         statusEl.textContent = t("nivel_burbuja_no_soportado");
