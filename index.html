@@ -527,6 +527,20 @@
     overscroll-behavior:contain;
   }
   .sheet h2{margin:0 0 4px; font-size:1.1rem;}
+  .bubble-level-wrap{display:flex; flex-direction:column; align-items:center; gap:16px; padding:18px 0 6px;}
+  .bubble-level-circle{
+    width:210px; height:210px; border-radius:50%; position:relative;
+    background:radial-gradient(circle at 50% 42%, var(--paper) 55%, var(--stone-100) 100%);
+    border:3px solid var(--stone-300); box-shadow:inset 0 3px 10px rgba(0,0,0,0.08);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .bubble-level-circle::before{content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--stone-300);}
+  .bubble-level-circle::after{content:""; position:absolute; top:0; bottom:0; left:50%; width:1px; background:var(--stone-300);}
+  .bubble-level-line{
+    width:150px; height:8px; border-radius:5px; background:var(--moss-600);
+    box-shadow:0 3px 6px rgba(0,0,0,0.18); transition:transform 0.12s ease-out; position:relative; z-index:1;
+  }
+  .bubble-level-angle{font-size:2.4rem; font-weight:800; color:var(--ink-900); font-variant-numeric:tabular-nums; letter-spacing:-0.02em;}
   .tut-dots{display:flex; justify-content:center; gap:6px; margin-top:16px;}
   .tut-dot{width:7px; height:7px; border-radius:50%; background:var(--stone-300);}
   .tut-dot.active{background:var(--moss-600); width:18px; border-radius:4px;}
@@ -1742,6 +1756,12 @@ const I18N = {
     tab_calendario:"Calendario", tab_cronometro:"Cronómetro", tab_extras:"Extras",
     sec_pdfs_entreno:"PDFs de entrenamiento", pdfs_entreno_hint:"Adjunta rutinas, planes de entrenamiento u otros PDFs de referencia.",
     anadir_pdf_entreno:"+ Añadir PDF", empty_pdfs_entreno_t:"Sin PDFs todavía", empty_pdfs_entreno_s:"Adjunta tu primer PDF de entrenamiento con el botón de abajo.",
+    nivel_burbuja_titulo:"Nivel de burbuja", nivel_burbuja_intro:"Mide la inclinación de un desplome o techo apoyando el móvil contra la pared.",
+    abrir_nivel_burbuja:"Abrir nivel de burbuja",
+    nivel_burbuja_hint:"Apoya el móvil totalmente plano contra la pared, con la pantalla mirando hacia ti. Toca \"Calibrar aquí\" en una pared vertical de referencia (0°), y luego muévelo al desplome para ver cuántos grados se aleja de la vertical.",
+    nivel_burbuja_sin_permiso:"No se ha concedido permiso para usar los sensores de movimiento del móvil. Revisa los permisos de la app.",
+    nivel_burbuja_no_soportado:"Tu dispositivo o navegador no admite el sensor de inclinación.",
+    calibrar_aqui:"📍 Calibrar aquí (0°)", toast_nivel_calibrado:"Nivel calibrado a 0°",
     quitar_pdf_entreno:"¿Quitar este PDF?", toast_pdf_guardado:"PDF guardado", toast_pdf_eliminado:"PDF eliminado",
     sec_botiquin:"Botiquín de emergencias",
     botiquin_disclaimer:"Esto es solo una guía básica de primeros auxilios, no sustituye la formación oficial ni la atención médica profesional. Ante cualquier accidente grave, llama siempre a emergencias.",
@@ -1875,9 +1895,9 @@ const I18N = {
     privacidad_hint:"Ahora mismo la app es 100% local — esto queda listo para cuando lleguen las funciones sociales.",
     guardar_ajustes:"Guardar ajustes", copia_seguridad:"Copia de seguridad",
     importar_csv_label:"Importar bloques desde CSV",
-    importar_csv_hint:"Sube un archivo CSV (exportado desde Excel/Google Sheets) para añadir de golpe bloques ya encadenados. Columnas necesarias: Nombre, Grado, Sector, Zona. Opcionales: Estilo, Nota, Fecha.",
+    importar_csv_hint:"Sube un archivo CSV (exportado desde Excel o Google Sheets) y añade de golpe varios bloques ya encadenados. Antes de nada, toca <b>\"Ver formato de ejemplo\"</b> para saber exactamente qué columnas necesitas.",
     importar_csv_btn:"📄 Importar CSV", ver_ejemplo_csv:"Ver formato de ejemplo",
-    csv_ejemplo_texto:"La primera fila debe llevar los nombres de columna. Ejemplo:\n\nNombre,Grado,Sector,Zona,Estilo\nEl Toro,7A,Canto Cochino,La Pedriza,Flash\nLa Sirena,6C+,Canto Cochino,La Pedriza,\nDragón,8A,Sector Norte,Albarracín,Flash\n\nLas columnas Estilo, Nota y Fecha son opcionales. Si la zona o el sector no existen todavía en tu diario, se crean automáticamente.",
+    csv_ejemplo_texto:"<p style='margin:0 0 10px;'>Abre Excel o Google Sheets y crea una tabla con estas columnas <b>en la primera fila</b>:</p>\n<p style='margin:0 0 4px;'><b>Obligatorias</b> (sin ellas no se puede importar):</p>\n<ul style='margin:0 0 10px;padding-left:18px;'>\n<li><b>Nombre</b> — el nombre del bloque. Ej: <i>El Toro</i></li>\n<li><b>Grado</b> — el grado tal cual. Ej: <i>7A</i> o <i>V6</i></li>\n<li><b>Sector</b> — dónde está. Ej: <i>Canto Cochino</i></li>\n<li><b>Zona</b> — la zona general. Ej: <i>La Pedriza</i></li>\n</ul>\n<p style='margin:0 0 4px;'><b>Opcionales</b> (puedes dejarlas vacías):</p>\n<ul style='margin:0 0 10px;padding-left:18px;'>\n<li><b>Estilo</b> — escribe \"Flash\" si lo hiciste a vista, y te saldrá el rayo ⚡</li>\n<li><b>Nota</b> — cualquier comentario sobre el bloque</li>\n<li><b>Fecha</b> — cuándo lo encadenaste. Si no la pones, se usa la fecha de hoy</li>\n</ul>\n<p style='margin:0 0 10px;'>💡 Si la zona o el sector que escribas no existen todavía en tu diario, se crean solos automáticamente.</p>\n<p style='margin:0 0 6px;'><b>Ejemplo de tabla completa:</b></p>\n<div class='comment-box' style='font-family:ui-monospace,monospace;font-size:0.74rem;overflow-x:auto;white-space:pre;'>Nombre,Grado,Sector,Zona,Estilo\nEl Toro,7A,Canto Cochino,La Pedriza,Flash\nLa Sirena,6C+,Canto Cochino,La Pedriza,\nDragón,8A,Sector Norte,Albarracín,Flash</div>\n<p style='margin:10px 0 0;'>Cuando la tengas lista: <b>Archivo → Descargar → Valores separados por comas (.csv)</b>, y sube ese archivo aquí.</p>",
     csv_error_titulo:"No se pudo importar", csv_sin_filas:"El archivo está vacío o no tiene el formato correcto.",
     csv_error_generico:"Hubo un problema leyendo el archivo. Revisa que sea un CSV válido.",
     csv_columnas_faltan:"Faltan columnas obligatorias. Necesitas al menos: Nombre, Grado, Sector y Zona.",
@@ -2123,6 +2143,12 @@ const I18N = {
     tab_calendario:"Calendar", tab_cronometro:"Timer", tab_extras:"Extras",
     sec_pdfs_entreno:"Training PDFs", pdfs_entreno_hint:"Attach routines, training plans or other reference PDFs.",
     anadir_pdf_entreno:"+ Add PDF", empty_pdfs_entreno_t:"No PDFs yet", empty_pdfs_entreno_s:"Attach your first training PDF with the button below.",
+    nivel_burbuja_titulo:"Bubble level", nivel_burbuja_intro:"Measure the steepness of an overhang or roof by holding your phone against the wall.",
+    abrir_nivel_burbuja:"Open bubble level",
+    nivel_burbuja_hint:"Hold your phone completely flat against the wall, screen facing you. Tap \"Calibrate here\" on a vertical reference wall (0°), then move it to the overhang to see how many degrees it leans past vertical.",
+    nivel_burbuja_sin_permiso:"Permission to use the phone's motion sensors wasn't granted. Check the app's permissions.",
+    nivel_burbuja_no_soportado:"Your device or browser doesn't support the tilt sensor.",
+    calibrar_aqui:"📍 Calibrate here (0°)", toast_nivel_calibrado:"Level calibrated to 0°",
     quitar_pdf_entreno:"Remove this PDF?", toast_pdf_guardado:"PDF saved", toast_pdf_eliminado:"PDF removed",
     sec_botiquin:"Emergency first aid",
     botiquin_disclaimer:"This is only a basic first aid guide, it doesn't replace official training or professional medical care. In any serious accident, always call emergency services.",
@@ -2257,9 +2283,9 @@ const I18N = {
     privacidad_hint:"The app is fully local right now — this is ready for when social features arrive.",
     guardar_ajustes:"Save settings", copia_seguridad:"Backup",
     importar_csv_label:"Import boulders from CSV",
-    importar_csv_hint:"Upload a CSV file (exported from Excel/Google Sheets) to add already-sent boulders in bulk. Required columns: Name, Grade, Sector, Area. Optional: Style, Note, Date.",
+    importar_csv_hint:"Upload a CSV file (exported from Excel or Google Sheets) and add several already-sent boulders at once. First, tap <b>\"See example format\"</b> to know exactly which columns you need.",
     importar_csv_btn:"📄 Import CSV", ver_ejemplo_csv:"See example format",
-    csv_ejemplo_texto:"The first row must have the column names. Example:\n\nName,Grade,Sector,Area,Style\nEl Toro,7A,Canto Cochino,La Pedriza,Flash\nLa Sirena,6C+,Canto Cochino,La Pedriza,\nDragon,8A,North Sector,Albarracin,Flash\n\nThe Style, Note and Date columns are optional. If the area or sector don't exist yet in your diary, they'll be created automatically.",
+    csv_ejemplo_texto:"<p style='margin:0 0 10px;'>Open Excel or Google Sheets and create a table with these columns <b>in the first row</b>:</p>\n<p style='margin:0 0 4px;'><b>Required</b> (import won't work without these):</p>\n<ul style='margin:0 0 10px;padding-left:18px;'>\n<li><b>Name</b> — the boulder's name. E.g: <i>El Toro</i></li>\n<li><b>Grade</b> — the grade as-is. E.g: <i>7A</i> or <i>V6</i></li>\n<li><b>Sector</b> — where it is. E.g: <i>Canto Cochino</i></li>\n<li><b>Area</b> — the general area. E.g: <i>La Pedriza</i></li>\n</ul>\n<p style='margin:0 0 4px;'><b>Optional</b> (leave blank if you want):</p>\n<ul style='margin:0 0 10px;padding-left:18px;'>\n<li><b>Style</b> — write \"Flash\" if you flashed it, and you'll get the ⚡ icon</li>\n<li><b>Note</b> — any comment about the boulder</li>\n<li><b>Date</b> — when you sent it. If left blank, today's date is used</li>\n</ul>\n<p style='margin:0 0 10px;'>💡 If the area or sector you type don't exist yet in your diary, they're created automatically.</p>\n<p style='margin:0 0 6px;'><b>Full example table:</b></p>\n<div class='comment-box' style='font-family:ui-monospace,monospace;font-size:0.74rem;overflow-x:auto;white-space:pre;'>Name,Grade,Sector,Area,Style\nEl Toro,7A,Canto Cochino,La Pedriza,Flash\nLa Sirena,6C+,Canto Cochino,La Pedriza,\nDragon,8A,North Sector,Albarracin,Flash</div>\n<p style='margin:10px 0 0;'>When ready: <b>File → Download → Comma-separated values (.csv)</b>, and upload that file here.</p>",
     csv_error_titulo:"Couldn't import", csv_sin_filas:"The file is empty or has the wrong format.",
     csv_error_generico:"There was a problem reading the file. Check that it's a valid CSV.",
     csv_columnas_faltan:"Required columns are missing. You need at least: Name, Grade, Sector and Area.",
@@ -2539,6 +2565,10 @@ function closeSheetInternal(){
   sheetBackdrop.classList.remove("open");
   sheetContent.innerHTML = "";
   unlockBodyScroll();
+  if(activeOrientationHandler){
+    window.removeEventListener("deviceorientation", activeOrientationHandler);
+    activeOrientationHandler = null;
+  }
 }
 function openItemFilterSheet(availableStyles, availableGrades, onApply){
   const sortOptions = [
@@ -5283,6 +5313,66 @@ async function getWeeklyGoal(){
   return Math.round(v);
 }
 
+let activeOrientationHandler = null;
+function openBubbleLevel(){
+  let calibrationOffset = 0;
+  let currentRaw = 0;
+
+  openSheet(`
+    <h2>📐 ${t("nivel_burbuja_titulo")}</h2>
+    <div class="sheet-sub" id="bubbleStatusText">${t("nivel_burbuja_hint")}</div>
+    <div class="bubble-level-wrap">
+      <div class="bubble-level-circle">
+        <div class="bubble-level-line" id="bubbleVisual"></div>
+      </div>
+      <div class="bubble-level-angle" id="bubbleAngleText">0°</div>
+    </div>
+    <div class="btn-row" style="flex-direction:column;margin-top:10px;">
+      <button class="btn btn-primary" id="bubbleCalibrateBtn" style="width:100%;">${t("calibrar_aqui")}</button>
+      <button class="btn btn-ghost" id="bubbleCloseBtn" style="width:100%;">${t("btn_entendido")}</button>
+    </div>
+  `,(root)=>{
+    function updateDisplay(){
+      const angle = Math.round(currentRaw - calibrationOffset);
+      const angleEl = document.getElementById("bubbleAngleText");
+      const visualEl = document.getElementById("bubbleVisual");
+      if(angleEl) angleEl.textContent = `${angle}°`;
+      if(visualEl) visualEl.style.transform = `rotate(${angle}deg)`;
+    }
+    function startListening(){
+      activeOrientationHandler = (e)=>{
+        if(e.beta!==null && e.beta!==undefined){
+          currentRaw = e.beta;
+          updateDisplay();
+        }
+      };
+      window.addEventListener("deviceorientation", activeOrientationHandler);
+    }
+    async function init(){
+      const statusEl = document.getElementById("bubbleStatusText");
+      if(typeof DeviceOrientationEvent!=="undefined" && typeof DeviceOrientationEvent.requestPermission==="function"){
+        try{
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if(perm==="granted"){ startListening(); }
+          else if(statusEl){ statusEl.textContent = t("nivel_burbuja_sin_permiso"); }
+        }catch(err){
+          if(statusEl) statusEl.textContent = t("nivel_burbuja_sin_permiso");
+        }
+      } else if(typeof DeviceOrientationEvent!=="undefined"){
+        startListening();
+      } else if(statusEl){
+        statusEl.textContent = t("nivel_burbuja_no_soportado");
+      }
+    }
+    init();
+    root.querySelector("#bubbleCalibrateBtn").onclick = ()=>{
+      calibrationOffset = currentRaw;
+      updateDisplay();
+      toast(t("toast_nivel_calibrado"));
+    };
+    root.querySelector("#bubbleCloseBtn").onclick = closeSheet;
+  });
+}
 async function renderExtrasPanel(){
   const trainingGoals = await getTrainingGoals();
   let html = `<div class="section-title">🎯 ${t("objetivos_entreno_titulo")}</div>
@@ -5325,12 +5415,18 @@ async function renderExtrasPanel(){
     <label class="btn btn-ghost" for="trainingPdfInput" style="width:100%;text-align:center;">${t("anadir_pdf_entreno")}</label>
   </div>`;
 
+  html += `<div class="section-title">📐 ${t("nivel_burbuja_titulo")}</div>
+  <div class="guide-hint">${t("nivel_burbuja_intro")}</div>
+  <div class="btn-row"><button class="btn btn-ghost" id="openBubbleLevelBtn" style="width:100%;">📐 ${t("abrir_nivel_burbuja")}</button></div>`;
+
   return html;
 }
 
 function wireExtrasPanel(){
   const addTGoalBtn = document.getElementById("addTrainingGoalBtn");
   if(addTGoalBtn) addTGoalBtn.addEventListener("click", openAddTrainingGoalSheet);
+  const bubbleBtn = document.getElementById("openBubbleLevelBtn");
+  if(bubbleBtn) bubbleBtn.addEventListener("click", openBubbleLevel);
   document.querySelectorAll("[data-tgoal-toggle]").forEach(el=>{
     el.addEventListener("click", async ()=>{
       const items = await getTrainingGoals();
