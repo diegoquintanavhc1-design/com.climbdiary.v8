@@ -1758,7 +1758,7 @@ const I18N = {
     anadir_pdf_entreno:"+ Añadir PDF", empty_pdfs_entreno_t:"Sin PDFs todavía", empty_pdfs_entreno_s:"Adjunta tu primer PDF de entrenamiento con el botón de abajo.",
     nivel_burbuja_titulo:"Nivel de burbuja", nivel_burbuja_intro:"Mide la inclinación de un desplome o techo apoyando el móvil contra la pared.",
     abrir_nivel_burbuja:"Abrir nivel de burbuja",
-    nivel_burbuja_hint:"Apoya el móvil totalmente plano contra la pared, con la pantalla mirando hacia ti. Toca \"Calibrar aquí\" en una pared vertical de referencia (0°), y luego muévelo al desplome para ver cuántos grados se aleja de la vertical.",
+    nivel_burbuja_hint:"Sujeta el móvil recto y vertical al abrir esta herramienta — ese es el 0°. Ahora inclínalo hasta que quede paralelo a la pared o desplome que quieras medir: el número te dirá los grados exactos, sin importar lo inclinado que esté.",
     nivel_burbuja_sin_permiso:"No se ha concedido permiso para usar los sensores de movimiento del móvil. Revisa los permisos de la app.",
     nivel_burbuja_no_soportado:"Tu dispositivo o navegador no admite el sensor de inclinación.",
     calibrar_aqui:"📍 Calibrar aquí (0°)", toast_nivel_calibrado:"Nivel calibrado a 0°",
@@ -2145,7 +2145,7 @@ const I18N = {
     anadir_pdf_entreno:"+ Add PDF", empty_pdfs_entreno_t:"No PDFs yet", empty_pdfs_entreno_s:"Attach your first training PDF with the button below.",
     nivel_burbuja_titulo:"Bubble level", nivel_burbuja_intro:"Measure the steepness of an overhang or roof by holding your phone against the wall.",
     abrir_nivel_burbuja:"Open bubble level",
-    nivel_burbuja_hint:"Hold your phone completely flat against the wall, screen facing you. Tap \"Calibrate here\" on a vertical reference wall (0°), then move it to the overhang to see how many degrees it leans past vertical.",
+    nivel_burbuja_hint:"Hold your phone straight and upright when you open this tool — that's 0°. Now tilt it until it's parallel to the wall or overhang you want to measure: the number shows the exact angle, however steep it is.",
     nivel_burbuja_sin_permiso:"Permission to use the phone's motion sensors wasn't granted. Check the app's permissions.",
     nivel_burbuja_no_soportado:"Your device or browser doesn't support the tilt sensor.",
     calibrar_aqui:"📍 Calibrate here (0°)", toast_nivel_calibrado:"Level calibrated to 0°",
@@ -5315,7 +5315,6 @@ async function getWeeklyGoal(){
 
 let activeOrientationHandler = null;
 function openBubbleLevel(){
-  let calibrationOffset = 0;
   let currentRaw = 0;
 
   openSheet(`
@@ -5333,23 +5332,40 @@ function openBubbleLevel(){
     </div>
   `,(root)=>{
     function updateDisplay(){
-      const angle = Math.round(currentRaw - calibrationOffset);
+      const angle = Math.round(currentRaw);
       const angleEl = document.getElementById("bubbleAngleText");
       const visualEl = document.getElementById("bubbleVisual");
       if(angleEl) angleEl.textContent = `${angle}°`;
       if(visualEl) visualEl.style.transform = `rotate(${angle}deg)`;
     }
+    // En vez de un ángulo "absoluto" (que se lía al pasar de cierto valor porque
+    // atan2 solo da resultados entre -180 y 180), vamos "desenrollando" el ángulo:
+    // detectamos cada salto grande entre una lectura y la siguiente y lo corregimos,
+    // así el número crece de forma continua por mucho que gires el móvil, sin volver
+    // nunca a saltar a cero. El "0°" es el momento en que abres la herramienta (con
+    // el móvil recto), o el momento en que tocas "Calibrar aquí".
     let smoothed = null;
+    let lastRawAtan = null;
+    let unwrappedAngle = 0;
+    let referenceAngle = null;
     function startListening(){
       activeOrientationHandler = (e)=>{
         const g = e.accelerationIncludingGravity;
         if(!g || g.y==null || g.z==null) return;
-        // Ángulo real medido con la gravedad (igual que un nivel/clinómetro de verdad),
-        // en vez del sensor de orientación (que depende de la brújula y es menos fiable).
-        // Con el móvil totalmente plano contra una pared vertical, este valor da ~0.
-        let raw = Math.atan2(g.z, -g.y) * (180/Math.PI);
-        // Pequeño suavizado para que el número no salte a cada instante.
-        smoothed = (smoothed===null) ? raw : (smoothed*0.8 + raw*0.2);
+        const rawAtan = Math.atan2(g.z, g.y) * (180/Math.PI);
+        if(lastRawAtan===null){
+          lastRawAtan = rawAtan;
+          unwrappedAngle = rawAtan;
+        } else {
+          let delta = rawAtan - lastRawAtan;
+          if(delta>180) delta -= 360;
+          if(delta<-180) delta += 360;
+          unwrappedAngle += delta;
+          lastRawAtan = rawAtan;
+        }
+        if(referenceAngle===null) referenceAngle = unwrappedAngle; // móvil recto al abrir = 0°
+        const target = unwrappedAngle - referenceAngle;
+        smoothed = (smoothed===null) ? target : (smoothed*0.8 + target*0.2);
         currentRaw = smoothed;
         updateDisplay();
       };
@@ -5373,7 +5389,9 @@ function openBubbleLevel(){
     }
     init();
     root.querySelector("#bubbleCalibrateBtn").onclick = ()=>{
-      calibrationOffset = currentRaw;
+      if(unwrappedAngle!==0 || referenceAngle!==null) referenceAngle = unwrappedAngle;
+      smoothed = 0;
+      currentRaw = 0;
       updateDisplay();
       toast(t("toast_nivel_calibrado"));
     };
