@@ -5332,11 +5332,10 @@ function openBubbleLevel(){
     </div>
   `,(root)=>{
     function updateDisplay(){
-      const angle = Math.round(currentRaw);
       const angleEl = document.getElementById("bubbleAngleText");
       const visualEl = document.getElementById("bubbleVisual");
-      if(angleEl) angleEl.textContent = `${angle}°`;
-      if(visualEl) visualEl.style.transform = `rotate(${angle}deg)`;
+      if(angleEl) angleEl.textContent = `${currentRaw.toFixed(1)}°`;
+      if(visualEl) visualEl.style.transform = `rotate(${currentRaw}deg)`;
     }
     // En vez de un ángulo "absoluto" (que se lía al pasar de cierto valor porque
     // atan2 solo da resultados entre -180 y 180), vamos "desenrollando" el ángulo:
