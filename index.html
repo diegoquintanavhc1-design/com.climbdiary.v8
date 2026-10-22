@@ -123,6 +123,15 @@
     font-size:0.7rem; font-weight:700; cursor:pointer; white-space:nowrap;
   }
   header.topbar .header-guide-pill.set{background:var(--moss-600); border-color:transparent;}
+  header.topbar .header-notes-btn{
+    flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.4);
+    background:rgba(255,255,255,0.16); color:#fff; font-size:1rem; cursor:pointer; position:relative;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  header.topbar .header-notes-btn.has{background:var(--moss-600); border-color:transparent;}
+  .sec-notes-read{white-space:normal; overflow-wrap:anywhere; line-height:1.5; font-size:0.92rem; padding:4px 2px;}
+  .sec-notes-read a{color:var(--moss-600); text-decoration:underline;}
+  .sec-notes-text{width:100%; min-height:200px; resize:vertical; box-sizing:border-box; padding:10px; border-radius:12px; border:1px solid rgba(0,0,0,0.15); font:inherit; font-size:0.92rem; background:#fff;}
   header.topbar .header-guide-remove{
     flex-shrink:0; width:26px; height:26px; border-radius:50%; border:none;
     background:rgba(0,0,0,0.3); color:#fff; font-size:0.7rem; cursor:pointer;
@@ -1861,7 +1870,7 @@ const I18N = {
     sesion_generica:"Sesión", hoy_tag:"HOY", sin_desc_toca:"Sin descripción — toca para añadirla", sin_desc:"Sin descripción todavía.",
     fecha_hoy:"Hoy", fecha_hace_dias:(n)=>`${n} d.`, fecha_hace_semanas:(n)=>`${n} sem.`, fecha_hace_meses:(n)=>`${n} m.`,
     attempt_flash_pill:"⚡ Flash", pegues_pill:(n)=>`${n} pegues`,
-    trabajo_seg:"Trabajo (segundos)", descanso_seg:"Descanso (segundos)", rondas:"Rondas", grosor_regleta:"Grosor de regleta (mm)", ver_descripcion:"Ver descripción",
+    trabajo_seg:"Trabajo (segundos)", descanso_seg:"Descanso (segundos)", rondas:"Rondas", grosor_regleta:"Grosor de regleta (mm)", notas_sector_titulo:"Notas del sector", notas_sector_ph:"Enlaces de guías, cómo llegar, apuntes…", notas_vacio:"Aún no hay notas. Toca editar para añadir enlaces o apuntes.", btn_editar_notas:"✏️ Editar", btn_guardar_notas:"Guardar", toast_notas_guardadas:"Notas guardadas", notas_btn_title:"Notas", ver_descripcion:"Ver descripción",
     pausa:"⏸ Pausa", empezar_timer:"▶ Empezar", reanudar:"▶ Reanudar", reiniciar:"↺ Reiniciar",
     omitir_descanso:"⏭ Omitir descanso", aplicar_ajustes_timer:"Aplicar", toast_ajustes_aplicados:"Ajustes aplicados",
     ronda:(r,tot)=>`Ronda ${r}/${tot}`, serie_completa:"¡Serie completa! 💪",
@@ -2248,7 +2257,7 @@ const I18N = {
     sesion_generica:"Session", hoy_tag:"TODAY", sin_desc_toca:"No description — tap to add one", sin_desc:"No description yet.",
     fecha_hoy:"Today", fecha_hace_dias:(n)=>`${n}d`, fecha_hace_semanas:(n)=>`${n}w`, fecha_hace_meses:(n)=>`${n}mo`,
     attempt_flash_pill:"⚡ Flash", pegues_pill:(n)=>`${n} tries`,
-    trabajo_seg:"Work (seconds)", descanso_seg:"Rest (seconds)", rondas:"Rounds", grosor_regleta:"Edge thickness (mm)", ver_descripcion:"View description",
+    trabajo_seg:"Work (seconds)", descanso_seg:"Rest (seconds)", rondas:"Rounds", grosor_regleta:"Edge thickness (mm)", notas_sector_titulo:"Sector notes", notas_sector_ph:"Guide links, how to get there, notes…", notas_vacio:"No notes yet. Tap edit to add links or notes.", btn_editar_notas:"✏️ Edit", btn_guardar_notas:"Save", toast_notas_guardadas:"Notes saved", notas_btn_title:"Notes", ver_descripcion:"View description",
     pausa:"⏸ Pause", empezar_timer:"▶ Start", reanudar:"▶ Resume", reiniciar:"↺ Reset",
     omitir_descanso:"⏭ Skip rest", aplicar_ajustes_timer:"Apply", toast_ajustes_aplicados:"Settings applied",
     ronda:(r,tot)=>`Round ${r}/${tot}`, serie_completa:"Set complete! 💪",
@@ -3149,7 +3158,13 @@ async function renderSectorsView(loc){
   const itemStore = state.climbMode==="route" ? "routes" : "blocks";
   const [sectors, items] = await Promise.all([dbGetAll("sectors"), dbGetAll(itemStore)]);
   const secOfLoc = sectors.filter(s=>s.locationId===loc.id && (s.climbType||"boulder")===state.climbMode);
-  secOfLoc.sort((a,b)=>(a.name||"").localeCompare((b.name||""), undefined, {sensitivity:"base"}));
+  // Más reciente arriba: actividad = creación del sector o último bloque/vía tocado en él.
+  const secActivity = {};
+  for(const sec of secOfLoc) secActivity[sec.id] = sec.createdAt||0;
+  for(const it of items){
+    if(secActivity[it.sectorId]!==undefined) secActivity[it.sectorId] = Math.max(secActivity[it.sectorId], it.createdAt||0);
+  }
+  secOfLoc.sort((a,b)=>(secActivity[b.id]-secActivity[a.id]) || (a.name||"").localeCompare((b.name||""), undefined, {sensitivity:"base"}));
 
   let html = `<div class="section-title">${t("sectores_en",escapeHtml(loc.name))}</div>`;
   html += `<div class="search-bar" style="margin:8px 4px 14px;"><span class="search-icon">${searchIconSVG(14)}</span><input type="search" id="secSearchInput" placeholder="${t("buscar_sector_placeholder")}" value="${escapeAttr(state.sectorSearchTerm)}"></div>`;
@@ -3339,6 +3354,57 @@ function openSectorMenu(sec){
   });
 }
 
+function linkifyNotes(txt){
+  const esc = escapeHtml(txt);
+  return esc.replace(/(https?:\/\/[^\s<]+)/g, (m)=>{
+    const clean = m.replace(/[.,;:!?)]+$/,"");
+    const tail = m.slice(clean.length);
+    return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>${tail}`;
+  }).replace(/\n/g,"<br>");
+}
+function setupSectorNotesButton(sec){
+  const headerAction = document.getElementById("topHeaderAction");
+  if(!headerAction) return;
+  const has = !!(sec.notes && sec.notes.trim());
+  headerAction.style.display = "";
+  headerAction.innerHTML = `<button class="header-notes-btn ${has?"has":""}" id="secNotesBtn" title="${t("notas_btn_title")}" aria-label="${t("notas_btn_title")}">📝</button>`;
+  headerAction.querySelector("#secNotesBtn").addEventListener("click", ()=>{
+    openSheet(`
+      <h2>📝 ${t("notas_sector_titulo")}</h2>
+      <div class="sheet-sub">${escapeHtml(sec.name)}</div>
+      <div id="secNotesBody"></div>
+    `,(root)=>{
+      const body = root.querySelector("#secNotesBody");
+      function showRead(){
+        const n = (sec.notes||"").trim();
+        body.innerHTML = `<div class="sec-notes-read">${n?linkifyNotes(sec.notes):`<span style="opacity:.6;">${t("notas_vacio")}</span>`}</div>
+          <div class="btn-row" style="flex-direction:column;margin-top:10px;">
+            <button class="btn btn-primary" id="secNotesEdit" style="width:100%;">${t("btn_editar_notas")}</button>
+            <button class="btn btn-ghost" id="secNotesClose" style="width:100%;">${t("btn_entendido")}</button>
+          </div>`;
+        body.querySelector("#secNotesEdit").onclick = showEdit;
+        body.querySelector("#secNotesClose").onclick = closeSheet;
+      }
+      function showEdit(){
+        body.innerHTML = `<textarea id="secNotesText" class="sec-notes-text" maxlength="5000" placeholder="${escapeAttr(t("notas_sector_ph"))}"></textarea>
+          <div class="btn-row" style="flex-direction:column;margin-top:10px;">
+            <button class="btn btn-primary" id="secNotesSave" style="width:100%;">${t("btn_guardar_notas")}</button>
+          </div>`;
+        const ta = body.querySelector("#secNotesText");
+        ta.value = sec.notes||"";
+        body.querySelector("#secNotesSave").onclick = async ()=>{
+          sec.notes = ta.value.trim();
+          await dbPut("sectors", sec);
+          toast(t("toast_notas_guardadas"));
+          const btn = document.getElementById("secNotesBtn");
+          if(btn) btn.classList.toggle("has", !!sec.notes);
+          showRead();
+        };
+      }
+      if((sec.notes||"").trim()) showRead(); else showEdit();
+    });
+  });
+}
 function locationGuideSectionHTML(sec){
   const hasLoc = sec.lat!=null && sec.lng!=null;
   const hasZoneLoc = sec.zoneLat!=null && sec.zoneLng!=null;
@@ -3527,6 +3593,7 @@ async function renderBlocksView(loc, sec){
   setHeader(sec.name, loc.name, true);
   fabBtn.style.display = "flex";
   fabBtn.onclick = ()=>openBlockForm(sec);
+  setupSectorNotesButton(sec);
 
   const allBlocks = (await dbGetAll("blocks")).filter(b=>b.sectorId===sec.id);
   allBlocks.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -4265,6 +4332,7 @@ async function renderRoutesView(loc, sec){
   setHeader(sec.name, loc.name, true);
   fabBtn.style.display = "flex";
   fabBtn.onclick = ()=>openRouteForm(sec);
+  setupSectorNotesButton(sec);
 
   const allRoutes = (await dbGetAll("routes")).filter(r=>r.sectorId===sec.id);
   allRoutes.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -5162,16 +5230,10 @@ let _pdfjsLoadPromise = null;
 function ensurePdfJs(){
   if(window.pdfjsLib) return Promise.resolve();
   if(_pdfjsLoadPromise) return _pdfjsLoadPromise;
-  _pdfjsLoadPromise = new Promise((resolve, reject)=>{
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-    script.onload = ()=>{
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      resolve();
-    };
-    script.onerror = ()=>{ _pdfjsLoadPromise = null; reject(new Error("pdfjs load failed")); };
-    document.head.appendChild(script);
-  });
+  _pdfjsLoadPromise = import("./pdf.min.mjs").then((mod)=>{
+    mod.GlobalWorkerOptions.workerSrc = new URL("./pdf.worker.min.mjs", document.baseURI).href;
+    window.pdfjsLib = mod;
+  }).catch((err)=>{ _pdfjsLoadPromise = null; throw err; });
   return _pdfjsLoadPromise;
 }
 async function openPdfOverlay(url, filename){
@@ -5202,7 +5264,7 @@ async function openPdfOverlay(url, filename){
   const indicator = document.getElementById("pdfPageIndicator");
   try{
     await ensurePdfJs();
-    const pdf = await window.pdfjsLib.getDocument(url).promise;
+    const pdf = await window.pdfjsLib.getDocument({url:url}).promise;
     pager.innerHTML = "";
     const dpr = window.devicePixelRatio || 1;
     const targetCssWidth = pager.clientWidth || window.innerWidth;
@@ -5225,7 +5287,7 @@ async function openPdfOverlay(url, filename){
       pager.appendChild(slide);
       pageTops.push(slide.offsetTop);
 
-      await page.render({canvasContext:canvas.getContext("2d"), viewport:renderViewport}).promise;
+      await page.render({canvasContext:canvas.getContext("2d"), canvas:canvas, viewport:renderViewport}).promise;
     }
     if(pdf.numPages>1){
       indicator.style.display = "";
@@ -5337,34 +5399,35 @@ function openBubbleLevel(){
       if(angleEl) angleEl.textContent = `${currentRaw.toFixed(1)}°`;
       if(visualEl) visualEl.style.transform = `rotate(${currentRaw}deg)`;
     }
-    // En vez de un ángulo "absoluto" (que se lía al pasar de cierto valor porque
-    // atan2 solo da resultados entre -180 y 180), vamos "desenrollando" el ángulo:
-    // detectamos cada salto grande entre una lectura y la siguiente y lo corregimos,
-    // así el número crece de forma continua por mucho que gires el móvil, sin volver
-    // nunca a saltar a cero. El "0°" es el momento en que abres la herramienta (con
-    // el móvil recto), o el momento en que tocas "Calibrar aquí".
+    // Ángulo ABSOLUTO respecto a la vertical real: 0° = móvil derecho (de pie),
+    // 90° = móvil tumbado, 180° = boca abajo. Ya no se toma como cero el momento
+    // en que abres la herramienta (eso desplazaba todas las lecturas); solo se
+    // desplaza el cero si tocas "Calibrar aquí".
+    const isIOS = (typeof DeviceMotionEvent!=="undefined" && typeof DeviceMotionEvent.requestPermission==="function");
     let smoothed = null;
-    let lastRawAtan = null;
-    let unwrappedAngle = 0;
-    let referenceAngle = null;
+    let lastAbs = 0;
+    let offset = 0;
     function startListening(){
       activeOrientationHandler = (e)=>{
         const g = e.accelerationIncludingGravity;
         if(!g || g.y==null || g.z==null) return;
-        const rawAtan = Math.atan2(g.z, g.y) * (180/Math.PI);
-        if(lastRawAtan===null){
-          lastRawAtan = rawAtan;
-          unwrappedAngle = rawAtan;
-        } else {
-          let delta = rawAtan - lastRawAtan;
-          if(delta>180) delta -= 360;
-          if(delta<-180) delta += 360;
-          unwrappedAngle += delta;
-          lastRawAtan = rawAtan;
+        const sgn = isIOS ? -1 : 1; // iOS invierte el signo de la gravedad
+        const gy = sgn*g.y, gz = sgn*g.z;
+        if(Math.abs(gy)<0.3 && Math.abs(gz)<0.3) return; // móvil de canto: sin información
+        let abs = Math.atan2(gz, gy) * (180/Math.PI);
+        lastAbs = abs;
+        let target = abs - offset;
+        while(target>180) target -= 360;
+        while(target<-180) target += 360;
+        if(smoothed===null){ smoothed = target; }
+        else {
+          let d = target - smoothed;
+          if(d>180) d -= 360;
+          if(d<-180) d += 360;
+          smoothed += d*0.5;
+          if(smoothed>180) smoothed -= 360;
+          if(smoothed<-180) smoothed += 360;
         }
-        if(referenceAngle===null) referenceAngle = unwrappedAngle; // móvil recto al abrir = 0°
-        const target = unwrappedAngle - referenceAngle;
-        smoothed = (smoothed===null) ? target : (smoothed*0.8 + target*0.2);
         currentRaw = smoothed;
         updateDisplay();
       };
@@ -5388,7 +5451,7 @@ function openBubbleLevel(){
     }
     init();
     root.querySelector("#bubbleCalibrateBtn").onclick = ()=>{
-      if(unwrappedAngle!==0 || referenceAngle!==null) referenceAngle = unwrappedAngle;
+      offset = lastAbs;
       smoothed = 0;
       currentRaw = 0;
       updateDisplay();
